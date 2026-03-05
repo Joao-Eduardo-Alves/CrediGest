@@ -44,10 +44,11 @@ public class ClienteController {
     @Operation(summary = "Editar cliente por id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")})
     @PatchMapping ("/{id}")
-    public ClienteDTO atualizar(@PathVariable Long id, @RequestBody @Valid ClienteDTO dto) {
-        return clienteService.atualizar(id, dto);
+    public ClienteDTO editar(@PathVariable Long id, @RequestBody @Valid ClienteDTO dto) {
+        return clienteService.editar(id, dto);
     }
 
     @Operation(summary = "Deletar cliente por id")

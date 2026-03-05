@@ -20,14 +20,9 @@ public class ClienteService {
 
         List<Cliente> clientes = clienteRepository.findAll();
 
-        return clientes.stream().map(cliente -> {
-            ClienteDTO dto = new ClienteDTO();
-            dto.setId(cliente.getId());
-            dto.setNome(cliente.getNome());
-            dto.setTelefone(cliente.getTelefone());
-            dto.setObservacao(cliente.getObservacao());
-            return dto;
-        }).toList();
+        return clientes.stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     public ClienteDTO cadastrar(ClienteDTO dto) {
@@ -39,15 +34,10 @@ public class ClienteService {
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
 
-        ClienteDTO resposta = new ClienteDTO();
-        resposta.setId(clienteSalvo.getId());
-        resposta.setNome(clienteSalvo.getNome());
-        resposta.setTelefone(clienteSalvo.getTelefone());
-
-        return resposta;
+        return toDTO(clienteSalvo);
     }
 
-    public ClienteDTO atualizar(Long id, ClienteDTO dto){
+    public ClienteDTO editar(Long id, ClienteDTO dto){
 
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
@@ -64,14 +54,7 @@ public class ClienteService {
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
 
-        ClienteDTO resposta = new ClienteDTO();
-        resposta.setId(clienteSalvo.getId());
-        resposta.setNome(clienteSalvo.getNome());
-        resposta.setTelefone(clienteSalvo.getTelefone());
-        resposta.setObservacao(clienteSalvo.getObservacao());
-
-        return resposta;
-
+        return toDTO(clienteSalvo);
     }
 
     public void deletar (Long id){
@@ -79,5 +62,15 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
         clienteRepository.delete(cliente);
+    }
+
+    //metodo conversor de entity para DTO
+    private ClienteDTO toDTO(Cliente cliente) {
+        ClienteDTO dto = new ClienteDTO();
+        dto.setId(cliente.getId());
+        dto.setNome(cliente.getNome());
+        dto.setTelefone(cliente.getTelefone());
+        dto.setObservacao(cliente.getObservacao());
+        return dto;
     }
 }
