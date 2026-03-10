@@ -55,8 +55,8 @@ public class FiadoController {
             @ApiResponse(responseCode = "200", description = "Item adicionado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Fiado não encontrado")})
     @PostMapping("/{fiadoId}/itens")
-    public FiadoDTO adicionarItem(@PathVariable Long fiadoId, @RequestBody @Valid List<ItemFiadoDTO> itensDto) {
-        return fiadoService.adicionarItem(fiadoId, itensDto);
+    public FiadoDTO adicionarItens(@PathVariable Long fiadoId, @RequestBody @Valid List<ItemFiadoDTO> itensDto) {
+        return fiadoService.adicionarItens(fiadoId, itensDto);
     }
 
     @Operation(summary = "Editar item de um fiado")

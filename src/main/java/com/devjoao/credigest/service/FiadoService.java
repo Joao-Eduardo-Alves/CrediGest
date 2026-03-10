@@ -54,7 +54,7 @@ public class FiadoService {
         fiadoRepository.delete(fiado);
     }
 
-    public FiadoDTO adicionarItem(Long fiadoId, List<ItemFiadoDTO> itensDto) {
+    public FiadoDTO adicionarItens(Long fiadoId, List<ItemFiadoDTO> itensDto) {
         Fiado fiado = fiadoRepository.findById(fiadoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fiado não encontrado"));
 
