@@ -1,6 +1,8 @@
 package com.devjoao.credigest.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,5 +53,15 @@ public class Fiado {
 
     public void setItens(List<ItemFiado> itens) {
         this.itens = itens;
+    }
+
+    @Transient // metodo para nao salvar no BD
+    public BigDecimal calcularValorTotal(){
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (ItemFiado item : itens) {
+            total = total.add(item.getValorProduto().multiply(BigDecimal.valueOf(item.getQuantidade())));
+        }
+        return total;
     }
 }

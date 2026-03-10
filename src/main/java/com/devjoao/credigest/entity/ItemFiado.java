@@ -2,6 +2,8 @@ package com.devjoao.credigest.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 public class ItemFiado {
 
@@ -10,10 +12,13 @@ public class ItemFiado {
     private Long id;
 
     private String nomeProduto;
+
+    private BigDecimal valorProduto;
+
     private int quantidade;
 
-    @ManyToOne
-    @JoinColumn(name = "fiado_id")
+    @ManyToOne (optional = false)
+    @JoinColumn(name = "fiado_id", nullable = false)
     private Fiado fiado;
 
     public Long getId() {
@@ -32,6 +37,14 @@ public class ItemFiado {
         this.nomeProduto = nomeProduto;
     }
 
+    public BigDecimal getValorProduto() {
+        return valorProduto;
+    }
+
+    public void setValorProduto(BigDecimal valorProduto) {
+        this.valorProduto = valorProduto;
+    }
+
     public int getQuantidade() {
         return quantidade;
     }
@@ -47,4 +60,6 @@ public class ItemFiado {
     public void setFiado(Fiado fiado) {
         this.fiado = fiado;
     }
+
+
 }

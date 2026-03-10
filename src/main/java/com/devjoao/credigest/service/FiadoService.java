@@ -27,7 +27,7 @@ public class FiadoService {
 
     public List<FiadoDTO> listar() {
         List<Fiado> fiados = fiadoRepository.findAll();
-        return fiados.stream().map(this::FiadotoDTO).collect(Collectors.toList());
+        return fiados.stream().map(this::FiadoToDTO).collect(Collectors.toList());
     }
 
     public FiadoDTO cadastrar(FiadoDTO dto) {
@@ -43,7 +43,7 @@ public class FiadoService {
 
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
 
-        return FiadotoDTO(fiadoSalvo);
+        return FiadoToDTO(fiadoSalvo);
     }
 
     public void deletar(Long id) {
@@ -59,7 +59,7 @@ public class FiadoService {
         AddItensAoFiado(fiado, itensDto);
 
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
-        return FiadotoDTO(fiadoSalvo);
+        return FiadoToDTO(fiadoSalvo);
     }
 
     public FiadoDTO editarItem(Long fiadoId, Long itemId, ItemFiadoDTO itemDto) {
@@ -71,11 +71,18 @@ public class FiadoService {
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item não encontrado"));
 
-        item.setNomeProduto(itemDto.getNomeProduto());
-        item.setQuantidade(itemDto.getQuantidade());
+        if (itemDto.getNomeProduto() != null){
+            item.setNomeProduto(itemDto.getNomeProduto());
+        }
+        if (itemDto.getValorProduto() != null) {
+            item.setValorProduto(itemDto.getValorProduto());
+        }
+        if (itemDto.getQuantidade() != null) {
+            item.setQuantidade(itemDto.getQuantidade());
+        }
 
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
-        return FiadotoDTO(fiadoSalvo);
+        return FiadoToDTO(fiadoSalvo);
     }
 
     public FiadoDTO removerItem(Long fiadoId, Long itemId) {
@@ -90,19 +97,17 @@ public class FiadoService {
         fiado.getItens().remove(item);
 
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
-        return FiadotoDTO(fiadoSalvo);
+        return FiadoToDTO(fiadoSalvo);
     }
 
-
     //metodos auxiliares ================================================
-    private FiadoDTO FiadotoDTO(Fiado fiado) {
+    private FiadoDTO FiadoToDTO(Fiado fiado) {
         FiadoDTO dto = new FiadoDTO();
         dto.setId(fiado.getId());
         dto.setData(fiado.getData());
-        if (fiado.getCliente() != null) {
-            dto.setClienteId(fiado.getCliente().getId());
-        }
+        dto.setClienteId(fiado.getCliente().getId());
         dto.setItens(fiado.getItens().stream().map(this::itemToDTO).collect(Collectors.toList()));
+        dto.setValorTotal(fiado.calcularValorTotal());
         return dto;
     }
 
@@ -110,6 +115,7 @@ public class FiadoService {
         ItemFiadoDTO dto = new ItemFiadoDTO();
         dto.setId(item.getId());
         dto.setNomeProduto(item.getNomeProduto());
+        dto.setValorProduto(item.getValorProduto());
         dto.setQuantidade(item.getQuantidade());
         return dto;
     }
@@ -118,6 +124,7 @@ public class FiadoService {
         for (ItemFiadoDTO itemDto : itensDto) {
             ItemFiado item = new ItemFiado();
             item.setNomeProduto(itemDto.getNomeProduto());
+            item.setValorProduto(itemDto.getValorProduto());
             item.setQuantidade(itemDto.getQuantidade());
             item.setFiado(fiado);
             fiado.getItens().add(item);

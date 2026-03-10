@@ -3,6 +3,7 @@ package com.devjoao.credigest.dto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class FiadoDTO {
 
     @NotEmpty(message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
+
+    private BigDecimal valorTotal;
 
     public Long getId() {
         return id;
@@ -48,5 +51,13 @@ public class FiadoDTO {
 
     public void setItens(List<ItemFiadoDTO> itens) {
         this.itens = itens;
+    }
+
+    public BigDecimal getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(BigDecimal valorTotal) {
+        this.valorTotal = valorTotal;
     }
 }
