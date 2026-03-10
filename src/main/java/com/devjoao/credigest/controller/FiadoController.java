@@ -64,7 +64,7 @@ public class FiadoController {
             @ApiResponse(responseCode = "200", description = "Item editado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Fiado ou item não encontrado")})
     @PatchMapping("/{fiadoId}/itens/{itemId}")
-    public FiadoDTO editarItem(@PathVariable Long fiadoId, @PathVariable Long itemId, @RequestBody @Valid ItemFiadoDTO itemDto) {
+    public FiadoDTO editarItem(@PathVariable Long fiadoId, @PathVariable Long itemId, @RequestBody ItemFiadoDTO itemDto) {
         return fiadoService.editarItem(fiadoId, itemId, itemDto);
     }
 
