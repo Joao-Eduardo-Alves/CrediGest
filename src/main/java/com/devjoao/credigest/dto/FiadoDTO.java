@@ -1,5 +1,6 @@
 package com.devjoao.credigest.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -16,6 +17,7 @@ public class FiadoDTO {
     @NotNull(message = "Cliente é obrigatório")
     private Long clienteId;
 
+    @Valid
     @NotEmpty(message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
 
