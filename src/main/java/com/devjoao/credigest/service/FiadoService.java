@@ -34,17 +34,15 @@ public class FiadoService {
         Fiado fiado = new Fiado();
         fiado.setData(dto.getData() != null ? dto.getData() : LocalDate.now());
 
-        if (dto.getClienteId() != null) {
-            Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
-            fiado.setCliente(cliente);
-        }
+        Cliente cliente = clienteRepository
+                .findById(dto.getClienteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+        fiado.setCliente(cliente);
 
-        if (dto.getItens() != null) {
-            AddItensAoFiado(fiado, dto.getItens());
-        }
+        AddItensAoFiado(fiado, dto.getItens());
 
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
+
         return FiadotoDTO(fiadoSalvo);
     }
 

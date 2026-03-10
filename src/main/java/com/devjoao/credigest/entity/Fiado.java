@@ -14,7 +14,8 @@ public class Fiado {
 
     private LocalDate data;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
     @OneToMany(mappedBy = "fiado", cascade = CascadeType.ALL, orphanRemoval = true)
