@@ -1,5 +1,6 @@
 package com.devjoao.credigest.dto;
 
+import com.devjoao.credigest.validation.OnCreate;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -14,11 +15,11 @@ public class FiadoDTO {
 
     private LocalDate data;
 
-    @NotNull(message = "Cliente é obrigatório")
+    @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório ao criar um fiado")
     private Long clienteId;
 
     @Valid
-    @NotEmpty(message = "O fiado deve ter pelo menos um item")
+    @NotEmpty(groups = OnCreate.class, message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
 
     private BigDecimal valorTotal;
@@ -62,4 +63,5 @@ public class FiadoDTO {
     public void setValorTotal(BigDecimal valorTotal) {
         this.valorTotal = valorTotal;
     }
+
 }
