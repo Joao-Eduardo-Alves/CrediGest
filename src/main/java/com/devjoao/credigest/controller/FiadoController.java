@@ -3,12 +3,15 @@ package com.devjoao.credigest.controller;
 import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.dto.ItemFiadoDTO;
 import com.devjoao.credigest.service.FiadoService;
+import com.devjoao.credigest.validation.OnCreate;
+import com.devjoao.credigest.validation.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +39,7 @@ public class FiadoController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public FiadoDTO cadastrar(@RequestBody @Valid FiadoDTO dto) {
+    public FiadoDTO cadastrar(@RequestBody @Validated(OnCreate.class) FiadoDTO dto) {
         return fiadoService.cadastrar(dto);
     }
 
@@ -64,7 +67,7 @@ public class FiadoController {
             @ApiResponse(responseCode = "200", description = "Item editado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Fiado ou item não encontrado")})
     @PatchMapping("/{fiadoId}/itens/{itemId}")
-    public FiadoDTO editarItem(@PathVariable Long fiadoId, @PathVariable Long itemId, @RequestBody ItemFiadoDTO itemDto) {
+    public FiadoDTO editarItem(@PathVariable Long fiadoId, @PathVariable Long itemId, @RequestBody @Validated(OnUpdate.class)ItemFiadoDTO itemDto) {
         return fiadoService.editarItem(fiadoId, itemId, itemDto);
     }
 

@@ -1,5 +1,7 @@
 package com.devjoao.credigest.dto;
 
+import com.devjoao.credigest.validation.OnCreate;
+import com.devjoao.credigest.validation.OnUpdate;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,13 +11,14 @@ public class ItemFiadoDTO {
 
     private Long id;
 
-    @NotBlank(message = "Nome do produto obrigatório")
+    @NotBlank(groups = OnCreate.class, message = "Nome do produto obrigatório")
     private String nomeProduto;
 
-    @NotNull(message = "O valor do produto é obrigatório")
+    @NotNull(groups = OnCreate.class, message = "O valor do produto é obrigatório")
     private BigDecimal valorProduto;
 
-    @Min(value = 1, message = "Quantidade deve ser pelo menos 1")
+    @NotNull(groups = OnCreate.class)
+    @Min(value = 1, groups = {OnCreate.class, OnUpdate.class}, message = "Quantidade deve ser pelo menos 1")
     private Integer quantidade;
 
     public Long getId() {

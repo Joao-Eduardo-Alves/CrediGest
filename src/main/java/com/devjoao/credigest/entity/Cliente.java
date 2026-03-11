@@ -13,6 +13,7 @@ public class Cliente {
     private String nome;
 
     private String telefone;
+
     private String observacao;
 
     public String getNome() {
