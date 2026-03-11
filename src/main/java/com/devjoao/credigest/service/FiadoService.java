@@ -41,6 +41,8 @@ public class FiadoService {
 
         AddItensAoFiado(fiado, dto.getItens());
 
+        fiado.setObservacao(dto.getObservacao());
+
         Fiado fiadoSalvo = fiadoRepository.save(fiado);
 
         return FiadoToDTO(fiadoSalvo);
@@ -107,6 +109,7 @@ public class FiadoService {
         dto.setData(fiado.getData());
         dto.setClienteId(fiado.getCliente().getId());
         dto.setItens(fiado.getItens().stream().map(this::itemToDTO).collect(Collectors.toList()));
+        dto.setObservacao(fiado.getObservacao());
         dto.setValorTotal(fiado.calcularValorTotal());
         return dto;
     }

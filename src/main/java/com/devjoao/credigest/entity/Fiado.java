@@ -23,6 +23,8 @@ public class Fiado {
     @OneToMany(mappedBy = "fiado", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemFiado> itens = new ArrayList<>();
 
+    private String observacao;
+
     public Long getId() {
         return id;
     }
@@ -53,6 +55,14 @@ public class Fiado {
 
     public void setItens(List<ItemFiado> itens) {
         this.itens = itens;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 
     @Transient // metodo para nao salvar no BD

@@ -22,6 +22,8 @@ public class FiadoDTO {
     @NotEmpty(groups = OnCreate.class, message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
 
+    private String observacao;
+
     private BigDecimal valorTotal;
 
     public Long getId() {
@@ -54,6 +56,14 @@ public class FiadoDTO {
 
     public void setItens(List<ItemFiadoDTO> itens) {
         this.itens = itens;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 
     public BigDecimal getValorTotal() {
