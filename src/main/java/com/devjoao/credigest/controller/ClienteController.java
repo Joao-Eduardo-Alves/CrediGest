@@ -1,6 +1,7 @@
 package com.devjoao.credigest.controller;
 
 import com.devjoao.credigest.dto.ClienteDTO;
+import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,15 @@ public class ClienteController {
         return clienteService.listar();
     }
 
+    @Operation(summary = "Obter cliente por id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cliente retornado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+    })
+    @GetMapping("/{id}")
+    public ClienteDTO obterPorId(@PathVariable Long id) {
+        return clienteService.obterPorId(id);
+    }
 
     @Operation(summary = "Cadastrar um novo cliente")
     @ApiResponses(value = {

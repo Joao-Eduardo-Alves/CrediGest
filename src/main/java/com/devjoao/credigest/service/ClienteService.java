@@ -1,7 +1,9 @@
 package com.devjoao.credigest.service;
 
 import com.devjoao.credigest.dto.ClienteDTO;
+import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.entity.Cliente;
+import com.devjoao.credigest.entity.Fiado;
 import com.devjoao.credigest.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,8 +23,14 @@ public class ClienteService {
         List<Cliente> clientes = clienteRepository.findAll();
 
         return clientes.stream()
-                .map(this::toDTO)
+                .map(this::ClienteToDTO)
                 .toList();
+    }
+
+    public ClienteDTO obterPorId(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+        return ClienteToDTO(cliente);
     }
 
     public ClienteDTO cadastrar(ClienteDTO dto) {
@@ -34,7 +42,7 @@ public class ClienteService {
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
 
-        return toDTO(clienteSalvo);
+        return ClienteToDTO(clienteSalvo);
     }
 
     public ClienteDTO editar(Long id, ClienteDTO dto){
@@ -54,7 +62,7 @@ public class ClienteService {
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
 
-        return toDTO(clienteSalvo);
+        return ClienteToDTO(clienteSalvo);
     }
 
     public void deletar (Long id){
@@ -65,7 +73,7 @@ public class ClienteService {
     }
 
     //metodo conversor de entity para DTO
-    private ClienteDTO toDTO(Cliente cliente) {
+    private ClienteDTO ClienteToDTO(Cliente cliente) {
         ClienteDTO dto = new ClienteDTO();
         dto.setId(cliente.getId());
         dto.setNome(cliente.getNome());
