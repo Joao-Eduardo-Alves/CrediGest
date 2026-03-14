@@ -1,0 +1,31 @@
+.cliente-list {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cliente-list h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.cliente-list table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-novo {
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .cliente-list {
+    padding: 1rem;
+  }
+
+  .cliente-list table {
+    font-size: 0.9rem;
+  }
+}
+

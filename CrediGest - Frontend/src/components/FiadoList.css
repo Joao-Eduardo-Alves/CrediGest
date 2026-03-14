@@ -1,0 +1,40 @@
+.fiado-list tr:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.fiado-list tr.info-header {
+  background-color: inherit;
+  cursor: default;
+}
+
+.fiado-list {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fiado-list h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.fiado-list table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.fiado-list .btn-novo {
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .fiado-list {
+    padding: 1rem;
+  }
+
+  .fiado-list table {
+    font-size: 0.9rem;
+  }
+}
