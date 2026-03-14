@@ -1,8 +1,8 @@
 package com.devjoao.credigest.controller;
 
 import com.devjoao.credigest.dto.ClienteDTO;
-import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.service.ClienteService;
+import com.devjoao.credigest.service.PagamentoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -19,6 +20,9 @@ public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
+
+    @Autowired
+    private PagamentoService pagamentoService;
 
     @Operation(summary = "Listar todos os clientes")
     @ApiResponses(value = {
@@ -69,6 +73,13 @@ public class ClienteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         clienteService.deletar(id);
+    }
+
+
+    @Operation(summary = "Obter saldo do cliente")
+    @GetMapping("/{clienteId}/saldo")
+    public BigDecimal obterSaldo(@PathVariable Long clienteId) {
+        return pagamentoService.calcularSaldoCliente(clienteId);
     }
 
 }
