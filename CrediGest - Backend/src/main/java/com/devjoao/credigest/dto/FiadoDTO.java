@@ -7,13 +7,14 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class FiadoDTO {
 
     private Long id;
 
-    private LocalDate data;
+    private LocalDateTime data;
 
     @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório ao criar um fiado")
     private Long clienteId;
@@ -34,11 +35,11 @@ public class FiadoDTO {
         this.id = id;
     }
 
-    public LocalDate getData() {
+    public LocalDateTime getData() {
         return data;
     }
 
-    public void setData(LocalDate data) {
+    public void setData(LocalDateTime data) {
         this.data = data;
     }
 

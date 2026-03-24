@@ -22,6 +22,9 @@ const fiadoService = {
 
   registrarPagamento: (clienteId, pagamentoData) =>
     api.post(`/pagamentos/registrar/${clienteId}`, pagamentoData),
+
+  listarPagamentos: (clienteId) =>
+    api.get(`/pagamentos/historico/${clienteId}`),
 };
 
 export default fiadoService;

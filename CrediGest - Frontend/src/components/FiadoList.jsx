@@ -4,6 +4,7 @@ import "./FiadoList.css";
 
 function FiadoList() {
   const [fiados, setFiados] = useState({});
+  const [pagamentos, setPagamentos] = useState({});
   const [exibirClientes, setExibirClientes] = useState({});
   const [exibirFiados, setExibirFiados] = useState({});
   const [novoItem, setNovoItem] = useState({});
@@ -11,6 +12,7 @@ function FiadoList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saldos, setSaldos] = useState({});
+  const [modalItemAberto, setModalItemAberto] = useState(null);
 
   useEffect(() => {
     carregarFiados();
@@ -19,12 +21,10 @@ function FiadoList() {
   useEffect(() => {
     const carregarSaldos = async () => {
       const novosSaldos = {};
-
       for (const clienteId of Object.keys(fiados)) {
         const saldo = await fiadoService.obterSaldo(clienteId);
         novosSaldos[clienteId] = saldo;
       }
-
       setSaldos(novosSaldos);
     };
 
@@ -44,6 +44,22 @@ function FiadoList() {
         return acc;
       }, {});
       setFiados(grouped);
+
+      // Carregar pagamentos
+      const novosPagamentos = {};
+      for (const clienteId of Object.keys(grouped)) {
+        try {
+          const lista = await fiadoService.listarPagamentos(clienteId);
+          novosPagamentos[clienteId] = lista;
+        } catch (err) {
+          console.error(
+            "Erro ao carregar pagamentos do cliente",
+            clienteId,
+            err,
+          );
+        }
+      }
+      setPagamentos(novosPagamentos);
     } catch (err) {
       console.error(err);
       setError("Erro ao carregar fiados");
@@ -150,7 +166,6 @@ function FiadoList() {
   const handlePagar = async (clienteId) => {
     try {
       const saldo = saldos[clienteId];
-
       let valor;
 
       if (saldo > 0) {
@@ -173,13 +188,26 @@ function FiadoList() {
       await fiadoService.registrarPagamento(clienteId, {
         valorPago: Number(valor),
       });
-
       alert("Pagamento registrado!");
       carregarFiados();
     } catch (err) {
       console.error(err);
       alert("Erro ao processar pagamento");
     }
+  };
+
+  const gerarExtratoCliente = (clienteId) => {
+    const listaFiados = fiados[clienteId] || [];
+    const listaPagamentos = pagamentos[clienteId] || [];
+
+    const eventos = [
+      ...listaFiados.map((f) => ({ ...f, tipo: "fiado" })),
+      ...listaPagamentos.map((p) => ({ ...p, tipo: "pagamento" })),
+    ];
+
+    eventos.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    return eventos;
   };
 
   if (loading) return <div className="loading">Carregando...</div>;
@@ -200,306 +228,325 @@ function FiadoList() {
       ) : (
         <table>
           <tbody>
-            {Object.entries(fiados).map(([clienteId, lista]) => (
-              <React.Fragment key={clienteId}>
-                {/* Linha do Cliente */}
-                <tr
-                  className="cliente-row"
-                  onClick={() => toggleCliente(clienteId)}
-                >
-                  <td colSpan="4">
-                    <span className="seta">
-                      {exibirClientes[clienteId] ? "▼" : "▶"}
-                    </span>{" "}
-                    Cliente: {clienteId} ({lista.length} fiados) Valor Total: R${" "}
-                    {/* calcular valor total do fiado*/}
-                    {saldos[clienteId]?.toFixed(2)}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handlePagar(clienteId)}
-                      className="btn-editar"
-                    >
-                      Pagar
-                    </button>
-                  </td>
-                </tr>
-
-                {exibirClientes[clienteId] && (
-                  <tr className="fiado-container">
-                    <td colSpan="6">
-                      {/* Tabela de Fiados do Cliente */}
-                      <table className="fiados-cliente">
-                        <thead>
-                          <tr className="info-header">
-                            <th>Cliente</th>
-                            <th>Data</th>
-                            <th>Qtde Itens</th>
-                            <th>Valor Total</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {lista.map((fiado) => (
-                            <React.Fragment key={fiado.id}>
-                              {/* Linha do Fiado */}
-                              <tr
-                                className="fiado-row"
-                                onClick={() => toggleFiado(fiado.id)}
-                              >
-                                <td>{fiado.clienteId}</td>
-                                <td>
-                                  {new Date(fiado.data).toLocaleDateString()}
-                                </td>
-                                <td>{fiado.itens.length}</td>
-                                <td>R$ {fiado.valorTotal.toFixed(2)}</td>
-                                <td>
-                                  <button
-                                    className="btn-deletar"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteFiado(fiado.id);
-                                    }}
-                                  >
-                                    X
-                                  </button>
-                                </td>
-                              </tr>
-
-                              {/* Itens do Fiado */}
-                              {exibirFiados[fiado.id] && (
-                                <tr>
-                                  <td colSpan="6">
-                                    <table className="itens-table">
-                                      <thead>
-                                        <tr className="info-header">
-                                          <th>Produto</th>
-                                          <th>Quantidade</th>
-                                          <th>Valor</th>
-                                          <th>SubTotal</th>
-                                          <th>Ações</th>
-                                        </tr>
-                                      </thead>
-
-                                      <tbody>
-                                        {fiado.itens.map((item) => (
-                                          <tr
-                                            key={item.id}
-                                            className="item-row"
-                                          >
-                                            {editando[item.id] ? (
-                                              <>
-                                                <td>
-                                                  <input
-                                                    value={
-                                                      editando[item.id].nome
-                                                    }
-                                                    onChange={(e) =>
-                                                      setEditando((p) => ({
-                                                        ...p,
-                                                        [item.id]: {
-                                                          ...p[item.id],
-                                                          nome: e.target.value,
-                                                        },
-                                                      }))
-                                                    }
-                                                  />
-                                                </td>
-
-                                                <td>
-                                                  <input
-                                                    type="number"
-                                                    value={
-                                                      editando[item.id]
-                                                        .quantidade
-                                                    }
-                                                    onChange={(e) =>
-                                                      setEditando((p) => ({
-                                                        ...p,
-                                                        [item.id]: {
-                                                          ...p[item.id],
-                                                          quantidade: Number(
-                                                            e.target.value,
-                                                          ),
-                                                        },
-                                                      }))
-                                                    }
-                                                  />
-                                                </td>
-
-                                                <td>
-                                                  <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={
-                                                      editando[item.id].valor
-                                                    }
-                                                    onChange={(e) =>
-                                                      setEditando((p) => ({
-                                                        ...p,
-                                                        [item.id]: {
-                                                          ...p[item.id],
-                                                          valor: Number(
-                                                            e.target.value,
-                                                          ),
-                                                        },
-                                                      }))
-                                                    }
-                                                  />
-                                                </td>
-
-                                                <td>
-                                                  <button
-                                                    onClick={() =>
-                                                      saveEditItem(item.id)
-                                                    }
-                                                  >
-                                                    Salvar
-                                                  </button>
-
-                                                  <button
-                                                    onClick={() =>
-                                                      cancelEditItem(item.id)
-                                                    }
-                                                  >
-                                                    Cancelar
-                                                  </button>
-                                                </td>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <td>{item.nomeProduto}</td>
-                                                <td>{item.quantidade}</td>
-                                                <td>
-                                                  R${" "}
-                                                  {item.valorProduto.toFixed(2)}
-                                                </td>
-                                                <td>
-                                                  R${" "}
-                                                  {(
-                                                    item.valorProduto *
-                                                    item.quantidade
-                                                  ).toFixed(2)}
-                                                </td>
-
-                                                <td>
-                                                  <button
-                                                    onClick={() =>
-                                                      startEditItem(
-                                                        fiado.id,
-                                                        item,
-                                                      )
-                                                    }
-                                                  >
-                                                    Editar
-                                                  </button>
-
-                                                  <button
-                                                    onClick={() =>
-                                                      removeItem(
-                                                        fiado.id,
-                                                        item.id,
-                                                      )
-                                                    }
-                                                  >
-                                                    Remover
-                                                  </button>
-                                                </td>
-                                              </>
-                                            )}
-                                          </tr>
-                                        ))}
-
-                                        {/* Novo Item */}
-                                        <tr>
-                                          <td>
-                                            <input
-                                              placeholder="Novo produto"
-                                              value={
-                                                novoItem[fiado.id]?.nome || ""
-                                              }
-                                              onChange={(e) =>
-                                                setNovoItem((p) => ({
-                                                  ...p,
-                                                  [fiado.id]: {
-                                                    ...p[fiado.id],
-                                                    nome: e.target.value,
-                                                  },
-                                                }))
-                                              }
-                                            />
-                                          </td>
-
-                                          <td>
-                                            <input
-                                              type="number"
-                                              min="1"
-                                              value={
-                                                novoItem[fiado.id]
-                                                  ?.quantidade || 1
-                                              }
-                                              onChange={(e) =>
-                                                setNovoItem((p) => ({
-                                                  ...p,
-                                                  [fiado.id]: {
-                                                    ...p[fiado.id],
-                                                    quantidade: Number(
-                                                      e.target.value,
-                                                    ),
-                                                  },
-                                                }))
-                                              }
-                                            />
-                                          </td>
-
-                                          <td>
-                                            <input
-                                              type="number"
-                                              step="0.01"
-                                              value={
-                                                novoItem[fiado.id]?.valor || 0
-                                              }
-                                              onChange={(e) =>
-                                                setNovoItem((p) => ({
-                                                  ...p,
-                                                  [fiado.id]: {
-                                                    ...p[fiado.id],
-                                                    valor: Number(
-                                                      e.target.value,
-                                                    ),
-                                                  },
-                                                }))
-                                              }
-                                            />
-                                          </td>
-
-                                          <td>
-                                            <button
-                                              onClick={() =>
-                                                handleAddItem(fiado.id)
-                                              }
-                                            >
-                                              Adicionar
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </td>
-                                </tr>
-                              )}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </table>
+            {Object.keys(fiados).map((clienteId) => {
+              const extrato = gerarExtratoCliente(clienteId);
+              return (
+                <React.Fragment key={clienteId}>
+                  <tr
+                    className="cliente-row"
+                    onClick={() => toggleCliente(clienteId)}
+                  >
+                    <td colSpan="4">
+                      <span className="seta">
+                        {exibirClientes[clienteId] ? "▼" : "▶"}
+                      </span>{" "}
+                      Cliente: {clienteId} Valor Total: R${" "}
+                      {saldos[clienteId]?.toFixed(2)}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handlePagar(clienteId)}
+                        className="btn-pagar"
+                      >
+                        Pagar
+                      </button>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
+
+                  {exibirClientes[clienteId] && (
+                    <tr className="fiado-container">
+                      <td colSpan="6">
+                        <table className="fiados-cliente">
+                          <thead>
+                            <tr className="info-header">
+                              <th>Data</th>
+                              <th>Tipo</th>
+                              <th>Observação</th>
+                              <th>Qtde Itens</th>
+                              <th>Valor</th>
+                              <th>EXIBIR ITENS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extrato.map((e) => (
+                              <React.Fragment
+                                key={e.id || `${e.tipo}-${e.data}`}
+                              >
+                                <tr
+                                  className={
+                                    e.tipo === "pagamento"
+                                      ? "pagamento-row"
+                                      : "fiado-row"
+                                  }
+                                >
+                                  <td>{new Date(e.data).toLocaleString()}</td>
+
+                                  <td>
+                                    {e.tipo === "fiado" ? "Fiado" : "Pagamento"}
+                                  </td>
+
+                                  <td>
+                                    {e.tipo === "fiado" ? e.observacao : "-"}
+                                  </td>
+
+                                  <td>
+                                    {e.tipo === "fiado" ? e.itens.length : "-"}
+                                  </td>
+
+                                  <td>
+                                    R${" "}
+                                    {e.tipo === "fiado"
+                                      ? e.valorTotal.toFixed(2)
+                                      : e.valorPago.toFixed(2)}
+                                  </td>
+                                  <td>
+                                    {e.tipo === "fiado" && (
+                                      <button
+                                        onClick={(ev) => {
+                                          ev.stopPropagation();
+                                          toggleFiado(e.id);
+                                        }}
+                                      >
+                                        {exibirFiados[e.id] ? "▼" : "▶"}
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+
+                                {/* Itens do fiado */}
+                                {e.tipo === "fiado" && exibirFiados[e.id] && (
+                                  <tr>
+                                    <td colSpan="6">
+                                      <table className="itens-table">
+                                        <thead>
+                                          <tr className="info-header">
+                                            <th>Produto</th>
+                                            <th>Quantidade</th>
+                                            <th>Valor</th>
+                                            <th>Subtotal</th>
+                                            <th>Ações</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {e.itens.map((item) => (
+                                            <tr
+                                              key={item.id}
+                                              className="item-row"
+                                            >
+                                              {editando[item.id] ? (
+                                                <>
+                                                  <td>
+                                                    <input
+                                                      value={
+                                                        editando[item.id].nome
+                                                      }
+                                                      onChange={(ev) =>
+                                                        setEditando((p) => ({
+                                                          ...p,
+                                                          [item.id]: {
+                                                            ...p[item.id],
+                                                            nome: ev.target
+                                                              .value,
+                                                          },
+                                                        }))
+                                                      }
+                                                    />
+                                                  </td>
+                                                  <td>
+                                                    <input
+                                                      type="number"
+                                                      value={
+                                                        editando[item.id]
+                                                          .quantidade
+                                                      }
+                                                      onChange={(ev) =>
+                                                        setEditando((p) => ({
+                                                          ...p,
+                                                          [item.id]: {
+                                                            ...p[item.id],
+                                                            quantidade: Number(
+                                                              ev.target.value,
+                                                            ),
+                                                          },
+                                                        }))
+                                                      }
+                                                    />
+                                                  </td>
+                                                  <td>
+                                                    <input
+                                                      type="number"
+                                                      step="0.01"
+                                                      value={
+                                                        editando[item.id].valor
+                                                      }
+                                                      onChange={(ev) =>
+                                                        setEditando((p) => ({
+                                                          ...p,
+                                                          [item.id]: {
+                                                            ...p[item.id],
+                                                            valor: Number(
+                                                              ev.target.value,
+                                                            ),
+                                                          },
+                                                        }))
+                                                      }
+                                                    />
+                                                  </td>
+                                                  <td>
+                                                    <button
+                                                      onClick={() =>
+                                                        saveEditItem(item.id)
+                                                      }
+                                                    >
+                                                      Salvar
+                                                    </button>
+                                                    <button
+                                                      onClick={() =>
+                                                        cancelEditItem(item.id)
+                                                      }
+                                                    >
+                                                      Cancelar
+                                                    </button>
+                                                  </td>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <td>{item.nomeProduto}</td>
+                                                  <td>{item.quantidade}</td>
+                                                  <td>
+                                                    R$
+                                                    {item.valorProduto.toFixed(
+                                                      2,
+                                                    )}
+                                                  </td>
+                                                  <td>
+                                                    R$
+                                                    {(
+                                                      item.valorProduto *
+                                                      item.quantidade
+                                                    ).toFixed(2)}
+                                                  </td>
+                                                  <td>
+                                                    <button
+                                                      onClick={() =>
+                                                        startEditItem(
+                                                          e.id,
+                                                          item,
+                                                        )
+                                                      }
+                                                    >
+                                                      Editar
+                                                    </button>
+                                                    <button
+                                                      onClick={() =>
+                                                        removeItem(
+                                                          e.id,
+                                                          item.id,
+                                                        )
+                                                      }
+                                                    >
+                                                      Remover
+                                                    </button>
+                                                  </td>
+                                                </>
+                                              )}
+                                            </tr>
+                                          ))}
+
+                                          {/* Novo item */}
+                                          <tr>
+                                            <td>
+                                              <button
+                                                onClick={() =>
+                                                  setModalItemAberto(e.id)
+                                                }
+                                              >
+                                                + Adicionar Item
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
+      )}
+      {modalItemAberto && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Novo Item</h3>
+
+            <input
+              placeholder="Produto"
+              value={novoItem[modalItemAberto]?.nome || ""}
+              onChange={(e) =>
+                setNovoItem((p) => ({
+                  ...p,
+                  [modalItemAberto]: {
+                    ...p[modalItemAberto],
+                    nome: e.target.value,
+                  },
+                }))
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Quantidade"
+              value={novoItem[modalItemAberto]?.quantidade || 1}
+              onChange={(e) =>
+                setNovoItem((p) => ({
+                  ...p,
+                  [modalItemAberto]: {
+                    ...p[modalItemAberto],
+                    quantidade: Number(e.target.value),
+                  },
+                }))
+              }
+            />
+
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Valor"
+              value={novoItem[modalItemAberto]?.valor || 0}
+              onChange={(e) =>
+                setNovoItem((p) => ({
+                  ...p,
+                  [modalItemAberto]: {
+                    ...p[modalItemAberto],
+                    valor: Number(e.target.value),
+                  },
+                }))
+              }
+            />
+
+            <div className="modal-actions">
+              <button
+                onClick={() => {
+                  handleAddItem(modalItemAberto);
+                  setModalItemAberto(null);
+                }}
+              >
+                Salvar
+              </button>
+
+              <button onClick={() => setModalItemAberto(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

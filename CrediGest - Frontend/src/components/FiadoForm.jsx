@@ -5,13 +5,19 @@ import clienteService from "../services/clienteService";
 import "./FiadoForm.css";
 
 function FiadoForm() {
+  const getDataLocal = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const local = new Date(now.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 16);
+  };
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [clientes, setClientes] = useState([]);
   const [formData, setFormData] = useState({
-    data: new Date().toISOString().split("T")[0],
+    data: getDataLocal(),
     clienteId: "",
     itens: [],
     observacao: "",
@@ -170,7 +176,7 @@ function FiadoForm() {
           <div className="form-group">
             <label htmlFor="data">Data *</label>
             <input
-              type="date"
+              type="datetime-local"
               id="data"
               name="data"
               value={formData.data}

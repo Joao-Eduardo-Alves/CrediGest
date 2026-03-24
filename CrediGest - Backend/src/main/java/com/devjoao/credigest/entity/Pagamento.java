@@ -17,7 +17,7 @@ public class Pagamento {
 
     private BigDecimal valor;
 
-    private LocalDateTime dataPagamento;
+    private LocalDateTime data;
 
     public Long getId() {
         return id;
@@ -35,12 +35,12 @@ public class Pagamento {
         this.valor = valor;
     }
 
-    public LocalDateTime getDataPagamento() {
-        return dataPagamento;
+    public LocalDateTime getData() {
+        return data;
     }
 
-    public void setDataPagamento(LocalDateTime dataPagamento) {
-        this.dataPagamento = dataPagamento;
+    public void setData(LocalDateTime data) {
+        this.data = data;
     }
 
     public Cliente getCliente() {

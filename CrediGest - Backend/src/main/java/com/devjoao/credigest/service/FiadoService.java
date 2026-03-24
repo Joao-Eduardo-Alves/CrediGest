@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,7 @@ public class FiadoService {
 
     public FiadoDTO cadastrar(FiadoDTO dto) {
         Fiado fiado = new Fiado();
-        fiado.setData(dto.getData() != null ? dto.getData() : LocalDate.now());
+        fiado.setData(dto.getData() != null ? dto.getData() : LocalDateTime.now());
 
         Cliente cliente = clienteRepository
                 .findById(dto.getClienteId())

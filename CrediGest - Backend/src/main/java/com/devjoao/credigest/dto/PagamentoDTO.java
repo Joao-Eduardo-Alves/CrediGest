@@ -14,7 +14,7 @@ public class PagamentoDTO {
 
     private BigDecimal valorPago;
 
-    private LocalDateTime dataPagamento;
+    private LocalDateTime data;
 
     public Long getId() {
         return id;
@@ -39,12 +39,12 @@ public class PagamentoDTO {
         this.valorPago = valorPago;
     }
 
-    public LocalDateTime getDataPagamento() {
-        return dataPagamento;
+    public LocalDateTime getData() {
+        return data;
     }
 
-    public void setDataPagamento(LocalDateTime dataPagamento) {
-        this.dataPagamento = dataPagamento;
+    public void setData(LocalDateTime data) {
+        this.data = data;
     }
 
 }

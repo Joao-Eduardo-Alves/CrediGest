@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/pagamentos")
 public class PagamentoController {
@@ -20,5 +22,12 @@ public class PagamentoController {
             @RequestBody PagamentoDTO dto) {
 
         pagamentoService.registrarPagamento(clienteId, dto.getValorPago());
+    }
+
+    //endpoint para obter o histórico de pagamentos de um cliente
+    @Operation(summary = "Obtém o histórico de pagamentos de um cliente")
+    @GetMapping("/historico/{clienteId}")
+    public List<PagamentoDTO> ListarPagamentos(@PathVariable Long clienteId) {
+        return pagamentoService.listarPagamentos(clienteId);
     }
 }

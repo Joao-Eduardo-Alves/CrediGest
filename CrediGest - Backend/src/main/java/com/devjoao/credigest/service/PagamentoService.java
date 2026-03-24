@@ -1,5 +1,6 @@
 package com.devjoao.credigest.service;
 
+import com.devjoao.credigest.dto.PagamentoDTO;
 import com.devjoao.credigest.entity.Cliente;
 import com.devjoao.credigest.entity.Fiado;
 import com.devjoao.credigest.entity.Pagamento;
@@ -34,7 +35,7 @@ public class PagamentoService {
 
         pagamento.setCliente(cliente);
         pagamento.setValor(valor);
-        pagamento.setDataPagamento(LocalDateTime.now());
+        pagamento.setData(LocalDateTime.now());
 
         pagamentoRepository.save(pagamento);
     }
@@ -53,5 +54,18 @@ public class PagamentoService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return totalFiados.subtract(totalPagamentos);
+    }
+
+    public List<PagamentoDTO> listarPagamentos(Long clienteId) {
+        List<Pagamento> pagamentos = pagamentoRepository.findByClienteId(clienteId);
+
+        return pagamentos.stream().map(p -> {
+            PagamentoDTO dto = new PagamentoDTO();
+            dto.setId(p.getId());
+            dto.setClienteId(p.getCliente().getId());
+            dto.setValorPago(p.getValor());
+            dto.setData(p.getData());
+            return dto;
+        }).toList();
     }
 }
