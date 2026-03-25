@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,9 +13,10 @@ public class FiadoDTO {
 
     private Long id;
 
+    @NotNull(groups = OnCreate.class, message = "A data é obrigatória")
     private LocalDateTime data;
 
-    @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório ao criar um fiado")
+    @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório")
     private Long clienteId;
 
     @Valid

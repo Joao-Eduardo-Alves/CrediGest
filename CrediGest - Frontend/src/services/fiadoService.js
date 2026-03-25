@@ -3,11 +3,13 @@ import api from "./api";
 const fiadoService = {
   listarTodos: () => api.get("/fiados"),
 
-  criar: (fiadoData) => api.post("/fiados", fiadoData),
-
   obterPorId: (id) => api.get(`/fiados/${id}`),
 
+  criar: (fiadoData) => api.post("/fiados", fiadoData),
+
   deletar: (id) => api.delete(`/fiados/${id}`),
+
+  editar: (id, fiadoData) => api.patch(`/fiados/${id}`, fiadoData),
 
   adicionarItens: (fiadoId, itens) =>
     api.post(`/fiados/${fiadoId}/itens`, itens),
