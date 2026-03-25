@@ -9,6 +9,7 @@ function FiadoList() {
   const [exibirFiados, setExibirFiados] = useState({});
   const [novoItem, setNovoItem] = useState({});
   const [editando, setEditando] = useState({});
+  const [editandoFiado, setEditandoFiado] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saldos, setSaldos] = useState({});
@@ -45,7 +46,6 @@ function FiadoList() {
       }, {});
       setFiados(grouped);
 
-      // Carregar pagamentos
       const novosPagamentos = {};
       for (const clienteId of Object.keys(grouped)) {
         try {
@@ -76,17 +76,6 @@ function FiadoList() {
     setExibirFiados((p) => ({ ...p, [fiadoId]: !p[fiadoId] }));
   };
 
-  const handleDeleteFiado = async (id) => {
-    if (!window.confirm("Tem certeza que deseja deletar este fiado?")) return;
-    try {
-      await fiadoService.deletar(id);
-      carregarFiados();
-    } catch (err) {
-      console.error(err);
-      setError("Erro ao deletar fiado");
-    }
-  };
-
   const handleAddItem = async (fiadoId) => {
     const item = novoItem[fiadoId];
     if (!item || !item.nome || item.quantidade <= 0 || item.valor <= 0) {
@@ -109,6 +98,55 @@ function FiadoList() {
     } catch (err) {
       console.error(err);
       alert("Erro ao adicionar item");
+    }
+  };
+
+  const removeItem = async (fiadoId, itemId) => {
+    if (!window.confirm("Remover esse item?")) return;
+    try {
+      await fiadoService.removerItem(fiadoId, itemId);
+      carregarFiados();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao remover item");
+    }
+  };
+
+  const startEditFiado = (fiadoId, fiado) => {
+    setEditandoFiado((p) => ({
+      ...p,
+      [fiadoId]: {
+        data: fiado.data,
+        observacao: fiado.observacao,
+      },
+    }));
+  };
+
+  const cancelEditFiado = (fiadoId) => {
+    setEditandoFiado((p) => {
+      const novo = { ...p };
+      delete novo[fiadoId];
+      return novo;
+    });
+  };
+
+  const saveEditFiado = async (fiadoId) => {
+    const dados = editandoFiado[fiadoId];
+    if (!dados || !dados.data || dados.observacao === "") {
+      alert("Preencha todos os campos para salvar");
+      return;
+    }
+    try {
+      console.log(dados);
+      await fiadoService.editar(fiadoId, {
+        data: dados.data,
+        observacao: dados.observacao,
+      });
+      cancelEditFiado(fiadoId);
+      carregarFiados();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao atualizar fiado");
     }
   };
 
@@ -152,25 +190,14 @@ function FiadoList() {
     }
   };
 
-  const deleteFiado = async (fiadoId) => {
-    if (!window.confirm("Deletar esse fiado?")) return;
+  const handleDeleteFiado = async (fiadoId) => {
+    if (!window.confirm("Tem certeza que deseja deletar este fiado?")) return;
     try {
       await fiadoService.deletar(fiadoId);
       carregarFiados();
     } catch (err) {
       console.error(err);
       alert("Erro ao deletar fiado");
-    }
-  };
-
-  const removeItem = async (fiadoId, itemId) => {
-    if (!window.confirm("Remover esse item?")) return;
-    try {
-      await fiadoService.removerItem(fiadoId, itemId);
-      carregarFiados();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao remover item");
     }
   };
 
@@ -223,7 +250,6 @@ function FiadoList() {
 
   if (loading) return <div className="loading">Carregando...</div>;
   if (error) return <div className="error">{error}</div>;
-
   return (
     <div className="fiado-list">
       <h2>Fiados</h2>
@@ -291,52 +317,127 @@ function FiadoList() {
                                       : "fiado-row"
                                   }
                                 >
-                                  <td>
-                                    {e.tipo === "fiado" && (
-                                      <button
-                                        onClick={(ev) => {
-                                          ev.stopPropagation();
-                                          toggleFiado(e.id);
-                                        }}
-                                      >
-                                        {exibirFiados[e.id] ? "▼" : "▶"}
-                                      </button>
-                                    )}
-                                  </td>
-                                  <td>{new Date(e.data).toLocaleString()}</td>
+                                  {editandoFiado[e.id] && e.tipo === "fiado" ? (
+                                    <>
+                                      <td></td>
 
-                                  <td>
-                                    {e.tipo === "fiado" ? "Fiado" : "Pagamento"}
-                                  </td>
+                                      <td>
+                                        <input
+                                          type="datetime-local"
+                                          value={editandoFiado[e.id].data}
+                                          onChange={(ev) =>
+                                            setEditandoFiado((p) => ({
+                                              ...p,
+                                              [e.id]: {
+                                                ...p[e.id],
+                                                data: ev.target.value,
+                                              },
+                                            }))
+                                          }
+                                        />
+                                      </td>
 
-                                  <td>
-                                    {e.tipo === "fiado" ? e.observacao : "-"}
-                                  </td>
+                                      <td>Fiado</td>
 
-                                  <td>
-                                    {e.tipo === "fiado" ? e.itens.length : "-"}
-                                  </td>
+                                      <td>
+                                        <input
+                                          value={editandoFiado[e.id].observacao}
+                                          onChange={(ev) =>
+                                            setEditandoFiado((p) => ({
+                                              ...p,
+                                              [e.id]: {
+                                                ...p[e.id],
+                                                observacao: ev.target.value,
+                                              },
+                                            }))
+                                          }
+                                        />
+                                      </td>
 
-                                  <td>
-                                    R${" "}
-                                    {e.tipo === "fiado"
-                                      ? e.valorTotal.toFixed(2)
-                                      : e.valorPago.toFixed(2)}
-                                  </td>
+                                      <td>{e.itens.length}</td>
 
-                                  <td>
-                                    <button
-                                      onClick={() => {
-                                        if (e.tipo === "fiado") {
-                                          deleteFiado(e.id);
-                                        }
-                                      }}
-                                    >
-                                      X
-                                    </button>
+                                      <td>R$ {e.valorTotal.toFixed(2)}</td>
 
-                                    <button> Editar </button>
-                                  </td>
+                                      <td>
+                                        <button
+                                          onClick={() => saveEditFiado(e.id)}
+                                        >
+                                          Salvar
+                                        </button>
+                                        <button
+                                          onClick={() => cancelEditFiado(e.id)}
+                                        >
+                                          Cancelar
+                                        </button>
+                                      </td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td>
+                                        {e.tipo === "fiado" && (
+                                          <button
+                                            onClick={(ev) => {
+                                              ev.stopPropagation();
+                                              toggleFiado(e.id);
+                                            }}
+                                          >
+                                            {exibirFiados[e.id] ? "▼" : "▶"}
+                                          </button>
+                                        )}
+                                      </td>
+
+                                      <td>
+                                        {new Date(e.data).toLocaleString()}
+                                      </td>
+
+                                      <td>
+                                        {e.tipo === "fiado"
+                                          ? "Fiado"
+                                          : "Pagamento"}
+                                      </td>
+
+                                      <td>
+                                        {e.tipo === "fiado"
+                                          ? e.observacao
+                                          : "-"}
+                                      </td>
+
+                                      <td>
+                                        {e.tipo === "fiado"
+                                          ? e.itens.length
+                                          : "-"}
+                                      </td>
+
+                                      <td>
+                                        R${" "}
+                                        {e.tipo === "fiado"
+                                          ? e.valorTotal.toFixed(2)
+                                          : e.valorPago.toFixed(2)}
+                                      </td>
+
+                                      <td>
+                                        {e.tipo === "fiado" && (
+                                          <>
+                                            <button
+                                              onClick={() =>
+                                                handleDeleteFiado(e.id)
+                                              }
+                                            >
+                                              X
+                                            </button>
+
+                                            <button
+                                              onClick={() =>
+                                                startEditFiado(e.id, e)
+                                              }
+                                            >
+                                              Editar
+                                            </button>
+                                          </>
+                                        )}
+                                      </td>
+                                    </>
+                                  )}
                                 </tr>
 
                                 {/* Itens do fiado */}
