@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,6 +58,23 @@ public class FiadoService {
         Fiado fiado = fiadoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fiado não encontrado"));
         fiadoRepository.delete(fiado);
+    }
+
+    public FiadoDTO editar(Long id, FiadoDTO dto) {
+        Fiado fiado = fiadoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fiado não encontrado"));
+
+        if (dto.getData() != null) {
+            fiado.setData(dto.getData());
+        }
+
+        if (dto.getObservacao() != null) {
+            fiado.setObservacao(dto.getObservacao());
+        }
+
+        Fiado fiadoSalvo = fiadoRepository.save(fiado);
+
+        return FiadoToDTO(fiadoSalvo);
     }
 
     public FiadoDTO adicionarItens(Long fiadoId, List<ItemFiadoDTO> itensDto) {

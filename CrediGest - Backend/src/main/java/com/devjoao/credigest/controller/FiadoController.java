@@ -8,7 +8,6 @@ import com.devjoao.credigest.validation.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -63,12 +62,22 @@ public class FiadoController {
         fiadoService.deletar(id);
     }
 
+
+    @Operation(summary = "Editar um fiado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Fiado editado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Fiado não encontrado")})
+    @PatchMapping("/{fiadoId}")
+    public FiadoDTO editar(@PathVariable Long fiadoId, @RequestBody FiadoDTO fiadoDto) {
+        return fiadoService.editar(fiadoId, fiadoDto);
+    }
+
     @Operation(summary = "Adicionar item a um fiado")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Item adicionado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Fiado não encontrado")})
     @PostMapping("/{fiadoId}/itens")
-    public FiadoDTO adicionarItens(@PathVariable Long fiadoId, @RequestBody @Valid List<ItemFiadoDTO> itensDto) {
+    public FiadoDTO adicionarItens(@PathVariable Long fiadoId, @RequestBody @Validated(OnCreate.class) List<ItemFiadoDTO> itensDto) {
         return fiadoService.adicionarItens(fiadoId, itensDto);
     }
 
