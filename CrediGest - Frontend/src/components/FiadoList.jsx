@@ -152,6 +152,17 @@ function FiadoList() {
     }
   };
 
+  const deleteFiado = async (fiadoId) => {
+    if (!window.confirm("Deletar esse fiado?")) return;
+    try {
+      await fiadoService.deletar(fiadoId);
+      carregarFiados();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao deletar fiado");
+    }
+  };
+
   const removeItem = async (fiadoId, itemId) => {
     if (!window.confirm("Remover esse item?")) return;
     try {
@@ -314,7 +325,16 @@ function FiadoList() {
                                   </td>
 
                                   <td>
-                                    <button> X </button>
+                                    <button
+                                      onClick={() => {
+                                        if (e.tipo === "fiado") {
+                                          deleteFiado(e.id);
+                                        }
+                                      }}
+                                    >
+                                      X
+                                    </button>
+
                                     <button> Editar </button>
                                   </td>
                                 </tr>
