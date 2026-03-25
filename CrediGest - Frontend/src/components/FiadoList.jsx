@@ -259,12 +259,13 @@ function FiadoList() {
                         <table className="fiados-cliente">
                           <thead>
                             <tr className="info-header">
+                              <th> </th>
                               <th>Data</th>
                               <th>Tipo</th>
                               <th>Observação</th>
                               <th>Qtde Itens</th>
                               <th>Valor</th>
-                              <th>EXIBIR ITENS</th>
+                              <th></th>
                             </tr>
                           </thead>
                           <tbody>
@@ -279,6 +280,18 @@ function FiadoList() {
                                       : "fiado-row"
                                   }
                                 >
+                                  <td>
+                                    {e.tipo === "fiado" && (
+                                      <button
+                                        onClick={(ev) => {
+                                          ev.stopPropagation();
+                                          toggleFiado(e.id);
+                                        }}
+                                      >
+                                        {exibirFiados[e.id] ? "▼" : "▶"}
+                                      </button>
+                                    )}
+                                  </td>
                                   <td>{new Date(e.data).toLocaleString()}</td>
 
                                   <td>
@@ -299,24 +312,17 @@ function FiadoList() {
                                       ? e.valorTotal.toFixed(2)
                                       : e.valorPago.toFixed(2)}
                                   </td>
+
                                   <td>
-                                    {e.tipo === "fiado" && (
-                                      <button
-                                        onClick={(ev) => {
-                                          ev.stopPropagation();
-                                          toggleFiado(e.id);
-                                        }}
-                                      >
-                                        {exibirFiados[e.id] ? "▼" : "▶"}
-                                      </button>
-                                    )}
+                                    <button> X </button>
+                                    <button> Editar </button>
                                   </td>
                                 </tr>
 
                                 {/* Itens do fiado */}
                                 {e.tipo === "fiado" && exibirFiados[e.id] && (
                                   <tr>
-                                    <td colSpan="6">
+                                    <td colSpan="7">
                                       <table className="itens-table">
                                         <thead>
                                           <tr className="info-header">
@@ -429,6 +435,16 @@ function FiadoList() {
                                                   <td>
                                                     <button
                                                       onClick={() =>
+                                                        removeItem(
+                                                          e.id,
+                                                          item.id,
+                                                        )
+                                                      }
+                                                    >
+                                                      X
+                                                    </button>
+                                                    <button
+                                                      onClick={() =>
                                                         startEditItem(
                                                           e.id,
                                                           item,
@@ -436,16 +452,6 @@ function FiadoList() {
                                                       }
                                                     >
                                                       Editar
-                                                    </button>
-                                                    <button
-                                                      onClick={() =>
-                                                        removeItem(
-                                                          e.id,
-                                                          item.id,
-                                                        )
-                                                      }
-                                                    >
-                                                      Remover
                                                     </button>
                                                   </td>
                                                 </>
