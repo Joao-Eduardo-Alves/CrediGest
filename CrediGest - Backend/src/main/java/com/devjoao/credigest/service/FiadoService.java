@@ -135,6 +135,9 @@ public class FiadoService {
         FiadoDTO dto = new FiadoDTO();
         dto.setId(fiado.getId());
         dto.setData(fiado.getData());
+        if (fiado.getCliente() != null) {
+            dto.setNomeCliente(fiado.getCliente().getNome());
+        }
         dto.setClienteId(fiado.getCliente().getId());
         dto.setItens(fiado.getItens().stream().map(this::itemToDTO).collect(Collectors.toList()));
         dto.setObservacao(fiado.getObservacao());

@@ -19,6 +19,8 @@ public class FiadoDTO {
     @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório")
     private Long clienteId;
 
+    private String nomeCliente;
+
     @Valid
     @NotEmpty(groups = OnCreate.class, message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
@@ -30,7 +32,6 @@ public class FiadoDTO {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,6 +50,14 @@ public class FiadoDTO {
 
     public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
+    }
+
+    public String getNomeCliente() {
+        return nomeCliente;
+    }
+
+    public void setNomeCliente(String nomeCliente) {
+        this.nomeCliente = nomeCliente;
     }
 
     public List<ItemFiadoDTO> getItens() {
