@@ -56,8 +56,14 @@
   margin-top: 1rem;
 }
 
-.fiado-list .btn-novo {
-  margin-bottom: 1.5rem;
+.btn-pagar {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+.btn-pagar:hover {
+  background-color: #229954;
 }
 
 @media (max-width: 768px) {

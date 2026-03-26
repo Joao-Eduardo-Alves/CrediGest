@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import fiadoService from "../services/fiadoService";
+import { EditIcon, DeleteIcon, PayIcon } from "./Icons";
 import "./FiadoList.css";
 
 function FiadoList() {
@@ -289,10 +290,10 @@ function FiadoList() {
                     </td>
                     <td>
                       <button
-                        onClick={() => handlePagar(clienteId)}
                         className="btn-pagar"
+                        onClick={() => handlePagar(clienteId)}
                       >
-                        Pagar
+                        <PayIcon />
                       </button>
                     </td>
                   </tr>
@@ -423,25 +424,28 @@ function FiadoList() {
                                       </td>
 
                                       <td>
-                                        {e.tipo === "fiado" && (
-                                          <>
-                                            <button
-                                              onClick={() =>
-                                                handleDeleteFiado(e.id)
-                                              }
-                                            >
-                                              X
-                                            </button>
-
-                                            <button
-                                              onClick={() =>
-                                                startEditFiado(e.id, e)
-                                              }
-                                            >
-                                              Editar
-                                            </button>
-                                          </>
-                                        )}
+                                        <div className="acoes">
+                                          {e.tipo === "fiado" && (
+                                            <>
+                                              <button
+                                                className="btn-editar"
+                                                onClick={() =>
+                                                  startEditFiado(e.id, e)
+                                                }
+                                              >
+                                                <EditIcon />
+                                              </button>
+                                              <button
+                                                className="btn-deletar"
+                                                onClick={() =>
+                                                  handleDeleteFiado(e.id)
+                                                }
+                                              >
+                                                <DeleteIcon />
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
                                       </td>
                                     </>
                                   )}
@@ -458,7 +462,7 @@ function FiadoList() {
                                             <th>Quantidade</th>
                                             <th>Valor</th>
                                             <th>Subtotal</th>
-                                            <th>Ações</th>
+                                            <th></th>
                                           </tr>
                                         </thead>
                                         <tbody>
@@ -561,27 +565,32 @@ function FiadoList() {
                                                     ).toFixed(2)}
                                                   </td>
                                                   <td>
-                                                    <button
-                                                      onClick={() =>
-                                                        removeItem(
-                                                          e.id,
-                                                          item.id,
-                                                          e.itens,
-                                                        )
-                                                      }
-                                                    >
-                                                      X
-                                                    </button>
-                                                    <button
-                                                      onClick={() =>
-                                                        startEditItem(
-                                                          e.id,
-                                                          item,
-                                                        )
-                                                      }
-                                                    >
-                                                      Editar
-                                                    </button>
+                                                    <div className="acoes">
+                                                      <button
+                                                        className="btn-editar"
+                                                        onClick={() =>
+                                                          startEditItem(
+                                                            e.id,
+                                                            item,
+                                                          )
+                                                        }
+                                                      >
+                                                        <EditIcon />
+                                                      </button>
+
+                                                      <button
+                                                        className="btn-deletar"
+                                                        onClick={() =>
+                                                          removeItem(
+                                                            e.id,
+                                                            item.id,
+                                                            e.itens,
+                                                          )
+                                                        }
+                                                      >
+                                                        <DeleteIcon />
+                                                      </button>
+                                                    </div>
                                                   </td>
                                                 </>
                                               )}
@@ -592,6 +601,7 @@ function FiadoList() {
                                           <tr>
                                             <td>
                                               <button
+                                                className="btn-novo"
                                                 onClick={() =>
                                                   setModalItemAberto(e.id)
                                                 }
