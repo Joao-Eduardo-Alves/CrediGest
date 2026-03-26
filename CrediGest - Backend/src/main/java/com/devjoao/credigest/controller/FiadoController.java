@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,10 +93,11 @@ public class FiadoController {
 
     @Operation(summary = "Remover item de um fiado")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Item removido com sucesso"),
+            @ApiResponse(responseCode = "204", description = "Item removido com sucesso"),
             @ApiResponse(responseCode = "404", description = "Fiado ou item não encontrado")})
     @DeleteMapping("/{fiadoId}/itens/{itemId}")
-    public FiadoDTO removerItem(@PathVariable Long fiadoId, @PathVariable Long itemId) {
-        return fiadoService.removerItem(fiadoId, itemId);
+    public ResponseEntity<Void> removerItem(@PathVariable Long fiadoId, @PathVariable Long itemId) {
+        fiadoService.removerItem(fiadoId, itemId);
+        return ResponseEntity.noContent().build();
     }
 }

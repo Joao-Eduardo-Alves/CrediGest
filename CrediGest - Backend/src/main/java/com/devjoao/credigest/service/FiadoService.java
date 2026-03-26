@@ -110,7 +110,8 @@ public class FiadoService {
         return FiadoToDTO(fiadoSalvo);
     }
 
-    public FiadoDTO removerItem(Long fiadoId, Long itemId) {
+    public void removerItem(Long fiadoId, Long itemId) {
+
         Fiado fiado = fiadoRepository.findById(fiadoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fiado não encontrado"));
 
@@ -119,10 +120,14 @@ public class FiadoService {
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item não encontrado"));
 
+        if (fiado.getItens().size() == 1) {
+            fiadoRepository.delete(fiado);
+            return;
+        }
+
         fiado.getItens().remove(item);
 
-        Fiado fiadoSalvo = fiadoRepository.save(fiado);
-        return FiadoToDTO(fiadoSalvo);
+        fiadoRepository.save(fiado);
     }
 
     //metodos auxiliares ================================================

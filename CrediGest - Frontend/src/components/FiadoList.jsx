@@ -101,8 +101,15 @@ function FiadoList() {
     }
   };
 
-  const removeItem = async (fiadoId, itemId) => {
-    if (!window.confirm("Remover esse item?")) return;
+  const removeItem = async (fiadoId, itemId, itens) => {
+    const mensagem =
+      itens.length === 1
+        ? "Esse é o último item do fiado, excluí-lo irá deletar o fiado. Deseja prosseguir?"
+        : "Deseja remover esse item?";
+
+    const confirmado = window.confirm(mensagem);
+    if (!confirmado) return;
+
     try {
       await fiadoService.removerItem(fiadoId, itemId);
       carregarFiados();
@@ -559,6 +566,7 @@ function FiadoList() {
                                                         removeItem(
                                                           e.id,
                                                           item.id,
+                                                          e.itens,
                                                         )
                                                       }
                                                     >
