@@ -284,8 +284,8 @@ function FiadoList() {
                       <span className="seta">
                         {exibirClientes[clienteId] ? "▼" : "▶"}
                       </span>{" "}
-                      Cliente: {clienteId} Valor Total: R${" "}
-                      {saldos[clienteId]?.toFixed(2)}
+                      Cliente: {fiados[clienteId][0]?.nomeCliente || clienteId}{" "}
+                      Valor Total: R$ {saldos[clienteId]?.toFixed(2)}
                     </td>
                     <td>
                       <button
