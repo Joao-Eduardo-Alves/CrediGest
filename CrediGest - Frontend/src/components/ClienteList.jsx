@@ -1,15 +1,37 @@
 import React, { useState, useEffect } from "react";
 import clienteService from "../services/clienteService";
+import WhatsAppButton from "./WhatsAppButton";
 import "./ClienteList.css";
 
 function ClienteList() {
   const [clientes, setClientes] = useState([]);
+  const [saldos, setSaldos] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     carregarClientes();
   }, []);
+
+  useEffect(() => {
+    const carregarSaldos = async () => {
+      const novosSaldos = {};
+      for (const cliente of clientes) {
+        try {
+          const saldo = await clienteService.obterSaldo(cliente.id);
+          novosSaldos[cliente.id] = saldo ?? 0; // garante número
+        } catch (err) {
+          console.error(`Erro ao buscar saldo do cliente ${cliente.id}`, err);
+          novosSaldos[cliente.id] = 0;
+        }
+      }
+      setSaldos(novosSaldos);
+    };
+
+    if (clientes.length) {
+      carregarSaldos();
+    }
+  }, [clientes]);
 
   const carregarClientes = async () => {
     setLoading(true);
@@ -71,6 +93,11 @@ function ClienteList() {
                 <td>{cliente.telefone}</td>
                 <td>{cliente.observacao}</td>
                 <td>
+                  <WhatsAppButton
+                    telefone={cliente.telefone}
+                    nome={cliente.nome}
+                    valor={saldos[cliente.id]?.toFixed(2) ?? "0.00"}
+                  />
                   <button
                     className="btn-editar"
                     onClick={() =>

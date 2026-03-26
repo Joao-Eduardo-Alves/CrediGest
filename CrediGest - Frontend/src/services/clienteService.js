@@ -10,6 +10,8 @@ const clienteService = {
   editar: (id, clienteData) => api.patch(`/clientes/${id}`, clienteData),
 
   deletar: (id) => api.delete(`/clientes/${id}`),
+
+  obterSaldo: (id) => api.get(`/clientes/${id}/saldo`),
 };
 
 export default clienteService;
