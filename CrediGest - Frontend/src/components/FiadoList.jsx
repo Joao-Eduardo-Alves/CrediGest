@@ -6,10 +6,10 @@ import "./FiadoList.css";
 function FiadoList() {
   const [fiados, setFiados] = useState({});
   const [pagamentos, setPagamentos] = useState({});
-  const [exibirClientes, setExibirClientes] = useState({});
-  const [exibirFiados, setExibirFiados] = useState({});
+  const [exibirFiados, setExibirFiados] = useState({}); //exibirFiados
+  const [exibirItens, setExibirItens] = useState({}); //exibirItens
   const [novoItem, setNovoItem] = useState({});
-  const [editando, setEditando] = useState({});
+  const [editandoItem, setEditandoItem] = useState({});
   const [editandoFiado, setEditandoFiado] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -69,12 +69,12 @@ function FiadoList() {
     }
   };
 
-  const toggleCliente = (clienteId) => {
-    setExibirClientes((p) => ({ ...p, [clienteId]: !p[clienteId] }));
+  const toggleFiados = (clienteId) => {
+    setExibirFiados((p) => ({ ...p, [clienteId]: !p[clienteId] }));
   };
 
-  const toggleFiado = (fiadoId) => {
-    setExibirFiados((p) => ({ ...p, [fiadoId]: !p[fiadoId] }));
+  const toggleItens = (fiadoId) => {
+    setExibirItens((p) => ({ ...p, [fiadoId]: !p[fiadoId] }));
   };
 
   const handleAddItem = async (fiadoId) => {
@@ -159,7 +159,7 @@ function FiadoList() {
   };
 
   const startEditItem = (fiadoId, item) => {
-    setEditando((p) => ({
+    setEditandoItem((p) => ({
       ...p,
       [item.id]: {
         fiadoId,
@@ -171,7 +171,7 @@ function FiadoList() {
   };
 
   const cancelEditItem = (itemId) => {
-    setEditando((p) => {
+    setEditandoItem((p) => {
       const novo = { ...p };
       delete novo[itemId];
       return novo;
@@ -179,7 +179,7 @@ function FiadoList() {
   };
 
   const saveEditItem = async (itemId) => {
-    const dados = editando[itemId];
+    const dados = editandoItem[itemId];
     if (!dados || !dados.nome || dados.quantidade <= 0 || dados.valor <= 0) {
       alert("Preencha todos os campos para salvar");
       return;
@@ -279,11 +279,14 @@ function FiadoList() {
                 <React.Fragment key={clienteId}>
                   <tr
                     className="cliente-row"
-                    onClick={() => toggleCliente(clienteId)}
+                    onClick={(ev) => {
+                      if (ev.target.closest("button")) return;
+                      toggleFiados(clienteId);
+                    }}
                   >
                     <td colSpan="4">
                       <span className="seta">
-                        {exibirClientes[clienteId] ? "▼" : "▶"}
+                        {exibirFiados[clienteId] ? "▼" : "▶"}
                       </span>{" "}
                       Cliente: {fiados[clienteId][0]?.nomeCliente || clienteId}{" "}
                       Valor Total: R$ {saldos[clienteId]?.toFixed(2)}
@@ -298,12 +301,12 @@ function FiadoList() {
                     </td>
                   </tr>
 
-                  {exibirClientes[clienteId] && (
-                    <tr className="fiado-container">
+                  {exibirFiados[clienteId] && (
+                    <tr>
                       <td colSpan="6">
-                        <table className="fiados-cliente">
+                        <table>
                           <thead>
-                            <tr className="info-header">
+                            <tr>
                               <th> </th>
                               <th>Data</th>
                               <th>Tipo</th>
@@ -320,14 +323,25 @@ function FiadoList() {
                               >
                                 <tr
                                   className={
-                                    e.tipo === "pagamento"
-                                      ? "pagamento-row"
-                                      : "fiado-row"
+                                    e.tipo === "fiado"
+                                      ? "row-fiado"
+                                      : "row-pagamento"
                                   }
+                                  onClick={(ev) => {
+                                    if (
+                                      ev.target.closest("button") ||
+                                      ev.target.closest("input")
+                                    )
+                                      return;
+
+                                    if (e.tipo === "fiado") {
+                                      toggleItens(e.id);
+                                    }
+                                  }}
                                 >
                                   {editandoFiado[e.id] && e.tipo === "fiado" ? (
                                     <>
-                                      <td></td>
+                                      <td> {exibirItens[e.id] ? "▼" : "▶"}</td>
 
                                       <td>
                                         <input
@@ -368,11 +382,13 @@ function FiadoList() {
 
                                       <td>
                                         <button
+                                          className="btn-salvar"
                                           onClick={() => saveEditFiado(e.id)}
                                         >
                                           Salvar
                                         </button>
                                         <button
+                                          className="btn-cancelar"
                                           onClick={() => cancelEditFiado(e.id)}
                                         >
                                           Cancelar
@@ -382,16 +398,8 @@ function FiadoList() {
                                   ) : (
                                     <>
                                       <td>
-                                        {e.tipo === "fiado" && (
-                                          <button
-                                            onClick={(ev) => {
-                                              ev.stopPropagation();
-                                              toggleFiado(e.id);
-                                            }}
-                                          >
-                                            {exibirFiados[e.id] ? "▼" : "▶"}
-                                          </button>
-                                        )}
+                                        {e.tipo === "fiado" &&
+                                          (exibirItens[e.id] ? "▼" : "▶")}
                                       </td>
 
                                       <td>
@@ -429,17 +437,18 @@ function FiadoList() {
                                             <>
                                               <button
                                                 className="btn-editar"
-                                                onClick={() =>
-                                                  startEditFiado(e.id, e)
-                                                }
+                                                onClick={() => {
+                                                  startEditFiado(e.id, e);
+                                                }}
                                               >
                                                 <EditIcon />
                                               </button>
+
                                               <button
                                                 className="btn-deletar"
-                                                onClick={() =>
-                                                  handleDeleteFiado(e.id)
-                                                }
+                                                onClick={() => {
+                                                  handleDeleteFiado(e.id);
+                                                }}
                                               >
                                                 <DeleteIcon />
                                               </button>
@@ -452,12 +461,12 @@ function FiadoList() {
                                 </tr>
 
                                 {/* Itens do fiado */}
-                                {e.tipo === "fiado" && exibirFiados[e.id] && (
+                                {e.tipo === "fiado" && exibirItens[e.id] && (
                                   <tr>
                                     <td colSpan="7">
                                       <table className="itens-table">
                                         <thead>
-                                          <tr className="info-header">
+                                          <tr>
                                             <th>Produto</th>
                                             <th>Quantidade</th>
                                             <th>Valor</th>
@@ -471,22 +480,25 @@ function FiadoList() {
                                               key={item.id}
                                               className="item-row"
                                             >
-                                              {editando[item.id] ? (
+                                              {editandoItem[item.id] ? (
                                                 <>
                                                   <td>
                                                     <input
                                                       value={
-                                                        editando[item.id].nome
+                                                        editandoItem[item.id]
+                                                          .nome
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            nome: ev.target
-                                                              .value,
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              nome: ev.target
+                                                                .value,
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
@@ -494,19 +506,23 @@ function FiadoList() {
                                                     <input
                                                       type="number"
                                                       value={
-                                                        editando[item.id]
+                                                        editandoItem[item.id]
                                                           .quantidade
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            quantidade: Number(
-                                                              ev.target.value,
-                                                            ),
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              quantidade:
+                                                                Number(
+                                                                  ev.target
+                                                                    .value,
+                                                                ),
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
@@ -515,23 +531,34 @@ function FiadoList() {
                                                       type="number"
                                                       step="0.01"
                                                       value={
-                                                        editando[item.id].valor
+                                                        editandoItem[item.id]
+                                                          .valor
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            valor: Number(
-                                                              ev.target.value,
-                                                            ),
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              valor: Number(
+                                                                ev.target.value,
+                                                              ),
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
                                                   <td>
+                                                    R$
+                                                    {(
+                                                      item.valorProduto *
+                                                      item.quantidade
+                                                    ).toFixed(2)}
+                                                  </td>
+                                                  <td>
                                                     <button
+                                                      className="btn-salvar"
                                                       onClick={() =>
                                                         saveEditItem(item.id)
                                                       }
@@ -539,6 +566,7 @@ function FiadoList() {
                                                       Salvar
                                                     </button>
                                                     <button
+                                                      className="btn-cancelar"
                                                       onClick={() =>
                                                         cancelEditItem(item.id)
                                                       }
@@ -577,16 +605,15 @@ function FiadoList() {
                                                       >
                                                         <EditIcon />
                                                       </button>
-
                                                       <button
                                                         className="btn-deletar"
-                                                        onClick={() =>
+                                                        onClick={() => {
                                                           removeItem(
                                                             e.id,
                                                             item.id,
                                                             e.itens,
-                                                          )
-                                                        }
+                                                          );
+                                                        }}
                                                       >
                                                         <DeleteIcon />
                                                       </button>
