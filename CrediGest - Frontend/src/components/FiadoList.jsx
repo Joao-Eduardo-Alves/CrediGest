@@ -15,6 +15,8 @@ function FiadoList() {
   const [error, setError] = useState(null);
   const [saldos, setSaldos] = useState({});
   const [modalItemAberto, setModalItemAberto] = useState(null);
+  const [modalPagamentoAberto, setModalPagamentoAberto] = useState(null);
+  const [valorPagamento, setValorPagamento] = useState("");
 
   useEffect(() => {
     carregarFiados();
@@ -209,22 +211,14 @@ function FiadoList() {
     }
   };
 
-  const handlePagar = async (clienteId) => {
-    try {
-      const saldo = saldos[clienteId];
-      let valor;
+  const handlePagar = (clienteId) => {
+    setModalPagamentoAberto(clienteId);
+  };
 
-      if (saldo > 0) {
-        valor = prompt(
-          `O cliente deve: R$ ${saldo.toFixed(2)}\nDigite o valor do pagamento:`,
-        );
-      } else if (saldo < 0) {
-        valor = prompt(
-          `O cliente tem: R$ ${Math.abs(saldo).toFixed(2)} de crédito\nDigite o valor do pagamento:`,
-        );
-      } else {
-        valor = prompt("Digite o valor do pagamento:");
-      }
+  const confirmarPagamento = async () => {
+    try {
+      const clienteId = modalPagamentoAberto;
+      const valor = valorPagamento;
 
       if (!valor || isNaN(valor) || Number(valor) <= 0) {
         alert("Valor inválido");
@@ -235,6 +229,8 @@ function FiadoList() {
         valorPago: Number(valor),
       });
       alert("Pagamento registrado!");
+      setModalPagamentoAberto(null);
+      setValorPagamento("");
       carregarFiados();
     } catch (err) {
       console.error(err);
@@ -655,6 +651,8 @@ function FiadoList() {
           </tbody>
         </table>
       )}
+
+      {/* Modais  */}
       {modalItemAberto && (
         <div className="modal-overlay">
           <div className="modal">
@@ -716,6 +714,51 @@ function FiadoList() {
               </button>
 
               <button onClick={() => setModalItemAberto(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalPagamentoAberto && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Registrar Pagamento</h3>
+
+            {(() => {
+              const saldo = saldos[modalPagamentoAberto];
+
+              if (saldo > 0) {
+                return <p>O cliente deve: R$ {saldo.toFixed(2)}</p>;
+              } else if (saldo < 0) {
+                return (
+                  <p>
+                    O cliente tem: R$ {Math.abs(saldo).toFixed(2)} de crédito
+                  </p>
+                );
+              } else {
+                return <p>Saldo zerado</p>;
+              }
+            })()}
+
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Digite o valor do pagamento"
+              value={valorPagamento}
+              onChange={(e) => setValorPagamento(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button onClick={confirmarPagamento}>Confirmar</button>
+
+              <button
+                onClick={() => {
+                  setModalPagamentoAberto(null);
+                  setValorPagamento("");
+                }}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
