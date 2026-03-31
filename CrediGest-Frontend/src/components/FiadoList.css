@@ -37,8 +37,11 @@
 }
 
 .cliente-row {
-  background-color: inherit;
   cursor: pointer;
+}
+
+.cliente-row:nth-child(even) {
+  background-color: rgb(219, 219, 219);
 }
 
 .cliente-row:hover {
@@ -84,7 +87,7 @@
 }
 
 .row-pagamento {
-  background-color: #f5fcf7;
+  background-color: #ebfff0;
 }
 
 .row-fiado:hover {

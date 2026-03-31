@@ -127,7 +127,7 @@ function FiadoList() {
       ...p,
       [fiadoId]: {
         data: fiado.data,
-        observacao: fiado.observacao,
+        observacao: fiado.observacao ?? "",
       },
     }));
   };
@@ -142,7 +142,7 @@ function FiadoList() {
 
   const saveEditFiado = async (fiadoId) => {
     const dados = editandoFiado[fiadoId];
-    if (!dados || !dados.data || dados.observacao === "") {
+    if (!dados || !dados.data) {
       alert("Preencha todos os campos para salvar");
       return;
     }
@@ -359,7 +359,9 @@ function FiadoList() {
 
                                       <td>
                                         <input
-                                          value={editandoFiado[e.id].observacao}
+                                          value={
+                                            editandoFiado[e.id].observacao ?? ""
+                                          }
                                           onChange={(ev) =>
                                             setEditandoFiado((p) => ({
                                               ...p,
@@ -659,7 +661,7 @@ function FiadoList() {
             <h3>Novo Item</h3>
 
             <input
-              placeholder="Produto"
+              placeholder="Nome do produto"
               value={novoItem[modalItemAberto]?.nome || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
@@ -675,7 +677,7 @@ function FiadoList() {
             <input
               type="number"
               placeholder="Quantidade"
-              value={novoItem[modalItemAberto]?.quantidade || 1}
+              value={novoItem[modalItemAberto]?.quantidade || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
                   ...p,
@@ -691,7 +693,7 @@ function FiadoList() {
               type="number"
               step="0.01"
               placeholder="Valor"
-              value={novoItem[modalItemAberto]?.valor || 0}
+              value={novoItem[modalItemAberto]?.valor || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
                   ...p,
