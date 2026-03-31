@@ -247,7 +247,7 @@ function FiadoList() {
       ...listaPagamentos.map((p) => ({ ...p, tipo: "pagamento" })),
     ];
 
-    eventos.sort((a, b) => new Date(a.data) - new Date(b.data));
+    eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
 
     return eventos;
   };
