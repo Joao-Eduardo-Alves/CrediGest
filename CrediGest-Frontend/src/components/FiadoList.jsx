@@ -255,6 +255,26 @@ function FiadoList() {
     (acc, saldo) => acc + (saldo || 0),
     0,
   );
+  const formatarSaldo = (saldo) => {
+    if (saldo > 0) {
+      return {
+        texto: `Deve: R$ ${saldo.toFixed(2)}`,
+        classe: "saldo-devedor",
+      };
+    }
+
+    if (saldo < 0) {
+      return {
+        texto: `Crédito: R$ ${Math.abs(saldo).toFixed(2)}`,
+        classe: "saldo-credito",
+      };
+    }
+
+    return {
+      texto: "Saldo zerado",
+      classe: "saldo-zero",
+    };
+  };
   if (loading) return <div className="loading">Carregando...</div>;
   if (error) return <div className="error">{error}</div>;
   return (
@@ -288,7 +308,12 @@ function FiadoList() {
                         {exibirFiados[clienteId] ? "▼" : "▶"}
                       </span>{" "}
                       Cliente: {fiados[clienteId][0]?.nomeCliente || clienteId}{" "}
-                      Valor Total: R$ {saldos[clienteId]?.toFixed(2)}
+                      {(() => {
+                        const saldo = saldos[clienteId] ?? 0;
+                        const { texto, classe } = formatarSaldo(saldo);
+
+                        return <span className={classe}>{texto}</span>;
+                      })()}
                     </td>
                     <td>
                       <button

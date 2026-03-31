@@ -98,6 +98,20 @@
   background-color: #ccffd9;
 }
 
+.saldo-devedor {
+  color: #e74c3c; /* vermelho */
+  font-weight: 600;
+}
+
+.saldo-credito {
+  color: #27ae60; /* verde */
+  font-weight: 600;
+}
+
+.saldo-zero {
+  color: #7f8c8d; /* cinza */
+}
+
 @media (max-width: 768px) {
   .fiado-list {
     padding: 1rem;
