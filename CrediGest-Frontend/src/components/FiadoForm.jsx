@@ -192,7 +192,6 @@ function FiadoForm() {
               name="observacao"
               value={formData.observacao}
               onChange={handleChangeFormData}
-              required
             />
           </div>
         </div>
