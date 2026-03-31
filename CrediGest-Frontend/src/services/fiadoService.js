@@ -25,6 +25,9 @@ const fiadoService = {
   registrarPagamento: (clienteId, pagamentoData) =>
     api.post(`/pagamentos/registrar/${clienteId}`, pagamentoData),
 
+  excluirPagamento: (pagamentoId) =>
+    api.delete(`/pagamentos/excluir/${pagamentoId}`),
+
   listarPagamentos: (clienteId) =>
     api.get(`/pagamentos/historico/${clienteId}`),
 };

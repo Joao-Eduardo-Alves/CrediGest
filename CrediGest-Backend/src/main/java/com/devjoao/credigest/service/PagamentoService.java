@@ -8,7 +8,9 @@ import com.devjoao.credigest.repository.ClienteRepository;
 import com.devjoao.credigest.repository.FiadoRepository;
 import com.devjoao.credigest.repository.PagamentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -67,5 +69,11 @@ public class PagamentoService {
             dto.setData(p.getData());
             return dto;
         }).toList();
+    }
+
+    public void excluirPagamento(Long pagamentoId) {
+        Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado"));
+        pagamentoRepository.delete(pagamento);
     }
 }

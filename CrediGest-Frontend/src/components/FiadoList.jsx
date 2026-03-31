@@ -237,6 +237,17 @@ function FiadoList() {
       alert("Erro ao processar pagamento");
     }
   };
+  const handleDeletePagamento = async (pagamentoId) => {
+    if (!window.confirm("Deseja remover este pagamento?")) return;
+
+    try {
+      await fiadoService.excluirPagamento(pagamentoId);
+      carregarFiados();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao remover pagamento");
+    }
+  };
 
   const gerarExtratoCliente = (clienteId) => {
     const listaFiados = fiados[clienteId] || [];
@@ -475,6 +486,18 @@ function FiadoList() {
                                                 onClick={() => {
                                                   handleDeleteFiado(e.id);
                                                 }}
+                                              >
+                                                <DeleteIcon />
+                                              </button>
+                                            </>
+                                          )}
+                                          {e.tipo === "pagamento" && (
+                                            <>
+                                              <button
+                                                className="btn-deletar"
+                                                onClick={() =>
+                                                  handleDeletePagamento(e.id)
+                                                }
                                               >
                                                 <DeleteIcon />
                                               </button>

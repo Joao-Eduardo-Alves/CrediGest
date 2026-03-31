@@ -100,4 +100,5 @@ public class FiadoController {
         fiadoService.removerItem(fiadoId, itemId);
         return ResponseEntity.noContent().build();
     }
+
 }
