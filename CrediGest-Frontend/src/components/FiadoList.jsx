@@ -251,7 +251,10 @@ function FiadoList() {
 
     return eventos;
   };
-
+  const totalGeral = Object.values(saldos).reduce(
+    (acc, saldo) => acc + (saldo || 0),
+    0,
+  );
   if (loading) return <div className="loading">Carregando...</div>;
   if (error) return <div className="error">{error}</div>;
   return (
@@ -765,6 +768,12 @@ function FiadoList() {
           </div>
         </div>
       )}
+      <h2 className="total-geral">
+        {totalGeral > 0 && `Total a receber: R$ ${totalGeral.toFixed(2)}`}
+        {totalGeral < 0 &&
+          `Total em crédito: R$ ${Math.abs(totalGeral).toFixed(2)}`}
+        {totalGeral === 0 && `Saldo geral: zerado`}
+      </h2>
     </div>
   );
 }
