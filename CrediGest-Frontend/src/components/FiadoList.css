@@ -1,0 +1,123 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.modal input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.fiado-list {
+  background-color: rgb(231, 231, 231);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cliente-row {
+  cursor: pointer;
+}
+
+.cliente-row:nth-child(even) {
+  background-color: rgb(219, 219, 219);
+}
+
+.cliente-row:hover {
+  background-color: #ececec;
+}
+
+.fiado-list h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.fiado-list table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-pagar {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+.btn-pagar:hover {
+  background-color: #229954;
+}
+
+.itens-table thead {
+  background-color: #c4c9ce;
+  color: #555;
+}
+
+.item-row:nth-child(even) {
+  background-color: rgb(245, 245, 245);
+}
+
+.item-row:hover {
+  background-color: #eaeaea;
+}
+
+.row-fiado {
+  background-color: #fcf0f0;
+  cursor: pointer;
+}
+
+.row-pagamento {
+  background-color: #ebfff0;
+}
+
+.row-fiado:hover {
+  background-color: rgb(250, 202, 202);
+}
+
+.row-pagamento:hover {
+  background-color: #ccffd9;
+}
+
+.saldo-devedor {
+  color: #e74c3c; /* vermelho */
+  font-weight: 600;
+}
+
+.saldo-credito {
+  color: #27ae60; /* verde */
+  font-weight: 600;
+}
+
+.saldo-zero {
+  color: #7f8c8d; /* cinza */
+}
+
+@media (max-width: 768px) {
+  .fiado-list {
+    padding: 1rem;
+  }
+
+  .fiado-list table {
+    font-size: 0.9rem;
+  }
+}

@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import fiadoService from "../services/fiadoService";
+import { EditIcon, DeleteIcon, PayIcon } from "./Icons";
 import "./FiadoList.css";
 
 function FiadoList() {
   const [fiados, setFiados] = useState({});
   const [pagamentos, setPagamentos] = useState({});
-  const [exibirClientes, setExibirClientes] = useState({});
-  const [exibirFiados, setExibirFiados] = useState({});
+  const [exibirFiados, setExibirFiados] = useState({}); //exibirFiados
+  const [exibirItens, setExibirItens] = useState({}); //exibirItens
   const [novoItem, setNovoItem] = useState({});
-  const [editando, setEditando] = useState({});
+  const [editandoItem, setEditandoItem] = useState({});
   const [editandoFiado, setEditandoFiado] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saldos, setSaldos] = useState({});
   const [modalItemAberto, setModalItemAberto] = useState(null);
+  const [modalPagamentoAberto, setModalPagamentoAberto] = useState(null);
+  const [valorPagamento, setValorPagamento] = useState("");
 
   useEffect(() => {
     carregarFiados();
@@ -68,12 +71,12 @@ function FiadoList() {
     }
   };
 
-  const toggleCliente = (clienteId) => {
-    setExibirClientes((p) => ({ ...p, [clienteId]: !p[clienteId] }));
+  const toggleFiados = (clienteId) => {
+    setExibirFiados((p) => ({ ...p, [clienteId]: !p[clienteId] }));
   };
 
-  const toggleFiado = (fiadoId) => {
-    setExibirFiados((p) => ({ ...p, [fiadoId]: !p[fiadoId] }));
+  const toggleItens = (fiadoId) => {
+    setExibirItens((p) => ({ ...p, [fiadoId]: !p[fiadoId] }));
   };
 
   const handleAddItem = async (fiadoId) => {
@@ -124,7 +127,7 @@ function FiadoList() {
       ...p,
       [fiadoId]: {
         data: fiado.data,
-        observacao: fiado.observacao,
+        observacao: fiado.observacao ?? "",
       },
     }));
   };
@@ -139,7 +142,7 @@ function FiadoList() {
 
   const saveEditFiado = async (fiadoId) => {
     const dados = editandoFiado[fiadoId];
-    if (!dados || !dados.data || dados.observacao === "") {
+    if (!dados || !dados.data) {
       alert("Preencha todos os campos para salvar");
       return;
     }
@@ -158,7 +161,7 @@ function FiadoList() {
   };
 
   const startEditItem = (fiadoId, item) => {
-    setEditando((p) => ({
+    setEditandoItem((p) => ({
       ...p,
       [item.id]: {
         fiadoId,
@@ -170,7 +173,7 @@ function FiadoList() {
   };
 
   const cancelEditItem = (itemId) => {
-    setEditando((p) => {
+    setEditandoItem((p) => {
       const novo = { ...p };
       delete novo[itemId];
       return novo;
@@ -178,7 +181,7 @@ function FiadoList() {
   };
 
   const saveEditItem = async (itemId) => {
-    const dados = editando[itemId];
+    const dados = editandoItem[itemId];
     if (!dados || !dados.nome || dados.quantidade <= 0 || dados.valor <= 0) {
       alert("Preencha todos os campos para salvar");
       return;
@@ -208,22 +211,14 @@ function FiadoList() {
     }
   };
 
-  const handlePagar = async (clienteId) => {
-    try {
-      const saldo = saldos[clienteId];
-      let valor;
+  const handlePagar = (clienteId) => {
+    setModalPagamentoAberto(clienteId);
+  };
 
-      if (saldo > 0) {
-        valor = prompt(
-          `O cliente deve: R$ ${saldo.toFixed(2)}\nDigite o valor do pagamento:`,
-        );
-      } else if (saldo < 0) {
-        valor = prompt(
-          `O cliente tem: R$ ${Math.abs(saldo).toFixed(2)} de crédito\nDigite o valor do pagamento:`,
-        );
-      } else {
-        valor = prompt("Digite o valor do pagamento:");
-      }
+  const confirmarPagamento = async () => {
+    try {
+      const clienteId = modalPagamentoAberto;
+      const valor = valorPagamento;
 
       if (!valor || isNaN(valor) || Number(valor) <= 0) {
         alert("Valor inválido");
@@ -234,6 +229,8 @@ function FiadoList() {
         valorPago: Number(valor),
       });
       alert("Pagamento registrado!");
+      setModalPagamentoAberto(null);
+      setValorPagamento("");
       carregarFiados();
     } catch (err) {
       console.error(err);
@@ -250,11 +247,34 @@ function FiadoList() {
       ...listaPagamentos.map((p) => ({ ...p, tipo: "pagamento" })),
     ];
 
-    eventos.sort((a, b) => new Date(a.data) - new Date(b.data));
+    eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
 
     return eventos;
   };
+  const totalGeral = Object.values(saldos).reduce(
+    (acc, saldo) => acc + (saldo || 0),
+    0,
+  );
+  const formatarSaldo = (saldo) => {
+    if (saldo > 0) {
+      return {
+        texto: `Deve: R$ ${saldo.toFixed(2)}`,
+        classe: "saldo-devedor",
+      };
+    }
 
+    if (saldo < 0) {
+      return {
+        texto: `Crédito: R$ ${Math.abs(saldo).toFixed(2)}`,
+        classe: "saldo-credito",
+      };
+    }
+
+    return {
+      texto: "Saldo zerado",
+      classe: "saldo-zero",
+    };
+  };
   if (loading) return <div className="loading">Carregando...</div>;
   if (error) return <div className="error">{error}</div>;
   return (
@@ -278,31 +298,39 @@ function FiadoList() {
                 <React.Fragment key={clienteId}>
                   <tr
                     className="cliente-row"
-                    onClick={() => toggleCliente(clienteId)}
+                    onClick={(ev) => {
+                      if (ev.target.closest("button")) return;
+                      toggleFiados(clienteId);
+                    }}
                   >
                     <td colSpan="4">
                       <span className="seta">
-                        {exibirClientes[clienteId] ? "▼" : "▶"}
+                        {exibirFiados[clienteId] ? "▼" : "▶"}
                       </span>{" "}
                       Cliente: {fiados[clienteId][0]?.nomeCliente || clienteId}{" "}
-                      Valor Total: R$ {saldos[clienteId]?.toFixed(2)}
+                      {(() => {
+                        const saldo = saldos[clienteId] ?? 0;
+                        const { texto, classe } = formatarSaldo(saldo);
+
+                        return <span className={classe}>{texto}</span>;
+                      })()}
                     </td>
                     <td>
                       <button
-                        onClick={() => handlePagar(clienteId)}
                         className="btn-pagar"
+                        onClick={() => handlePagar(clienteId)}
                       >
-                        Pagar
+                        <PayIcon />
                       </button>
                     </td>
                   </tr>
 
-                  {exibirClientes[clienteId] && (
-                    <tr className="fiado-container">
+                  {exibirFiados[clienteId] && (
+                    <tr>
                       <td colSpan="6">
-                        <table className="fiados-cliente">
+                        <table>
                           <thead>
-                            <tr className="info-header">
+                            <tr>
                               <th> </th>
                               <th>Data</th>
                               <th>Tipo</th>
@@ -319,14 +347,25 @@ function FiadoList() {
                               >
                                 <tr
                                   className={
-                                    e.tipo === "pagamento"
-                                      ? "pagamento-row"
-                                      : "fiado-row"
+                                    e.tipo === "fiado"
+                                      ? "row-fiado"
+                                      : "row-pagamento"
                                   }
+                                  onClick={(ev) => {
+                                    if (
+                                      ev.target.closest("button") ||
+                                      ev.target.closest("input")
+                                    )
+                                      return;
+
+                                    if (e.tipo === "fiado") {
+                                      toggleItens(e.id);
+                                    }
+                                  }}
                                 >
                                   {editandoFiado[e.id] && e.tipo === "fiado" ? (
                                     <>
-                                      <td></td>
+                                      <td> {exibirItens[e.id] ? "▼" : "▶"}</td>
 
                                       <td>
                                         <input
@@ -348,7 +387,9 @@ function FiadoList() {
 
                                       <td>
                                         <input
-                                          value={editandoFiado[e.id].observacao}
+                                          value={
+                                            editandoFiado[e.id].observacao ?? ""
+                                          }
                                           onChange={(ev) =>
                                             setEditandoFiado((p) => ({
                                               ...p,
@@ -367,11 +408,13 @@ function FiadoList() {
 
                                       <td>
                                         <button
+                                          className="btn-salvar"
                                           onClick={() => saveEditFiado(e.id)}
                                         >
                                           Salvar
                                         </button>
                                         <button
+                                          className="btn-cancelar"
                                           onClick={() => cancelEditFiado(e.id)}
                                         >
                                           Cancelar
@@ -381,16 +424,8 @@ function FiadoList() {
                                   ) : (
                                     <>
                                       <td>
-                                        {e.tipo === "fiado" && (
-                                          <button
-                                            onClick={(ev) => {
-                                              ev.stopPropagation();
-                                              toggleFiado(e.id);
-                                            }}
-                                          >
-                                            {exibirFiados[e.id] ? "▼" : "▶"}
-                                          </button>
-                                        )}
+                                        {e.tipo === "fiado" &&
+                                          (exibirItens[e.id] ? "▼" : "▶")}
                                       </td>
 
                                       <td>
@@ -423,42 +458,46 @@ function FiadoList() {
                                       </td>
 
                                       <td>
-                                        {e.tipo === "fiado" && (
-                                          <>
-                                            <button
-                                              onClick={() =>
-                                                handleDeleteFiado(e.id)
-                                              }
-                                            >
-                                              X
-                                            </button>
+                                        <div className="acoes">
+                                          {e.tipo === "fiado" && (
+                                            <>
+                                              <button
+                                                className="btn-editar"
+                                                onClick={() => {
+                                                  startEditFiado(e.id, e);
+                                                }}
+                                              >
+                                                <EditIcon />
+                                              </button>
 
-                                            <button
-                                              onClick={() =>
-                                                startEditFiado(e.id, e)
-                                              }
-                                            >
-                                              Editar
-                                            </button>
-                                          </>
-                                        )}
+                                              <button
+                                                className="btn-deletar"
+                                                onClick={() => {
+                                                  handleDeleteFiado(e.id);
+                                                }}
+                                              >
+                                                <DeleteIcon />
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
                                       </td>
                                     </>
                                   )}
                                 </tr>
 
                                 {/* Itens do fiado */}
-                                {e.tipo === "fiado" && exibirFiados[e.id] && (
+                                {e.tipo === "fiado" && exibirItens[e.id] && (
                                   <tr>
                                     <td colSpan="7">
                                       <table className="itens-table">
                                         <thead>
-                                          <tr className="info-header">
+                                          <tr>
                                             <th>Produto</th>
                                             <th>Quantidade</th>
                                             <th>Valor</th>
                                             <th>Subtotal</th>
-                                            <th>Ações</th>
+                                            <th></th>
                                           </tr>
                                         </thead>
                                         <tbody>
@@ -467,22 +506,25 @@ function FiadoList() {
                                               key={item.id}
                                               className="item-row"
                                             >
-                                              {editando[item.id] ? (
+                                              {editandoItem[item.id] ? (
                                                 <>
                                                   <td>
                                                     <input
                                                       value={
-                                                        editando[item.id].nome
+                                                        editandoItem[item.id]
+                                                          .nome
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            nome: ev.target
-                                                              .value,
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              nome: ev.target
+                                                                .value,
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
@@ -490,19 +532,23 @@ function FiadoList() {
                                                     <input
                                                       type="number"
                                                       value={
-                                                        editando[item.id]
+                                                        editandoItem[item.id]
                                                           .quantidade
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            quantidade: Number(
-                                                              ev.target.value,
-                                                            ),
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              quantidade:
+                                                                Number(
+                                                                  ev.target
+                                                                    .value,
+                                                                ),
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
@@ -511,23 +557,34 @@ function FiadoList() {
                                                       type="number"
                                                       step="0.01"
                                                       value={
-                                                        editando[item.id].valor
+                                                        editandoItem[item.id]
+                                                          .valor
                                                       }
                                                       onChange={(ev) =>
-                                                        setEditando((p) => ({
-                                                          ...p,
-                                                          [item.id]: {
-                                                            ...p[item.id],
-                                                            valor: Number(
-                                                              ev.target.value,
-                                                            ),
-                                                          },
-                                                        }))
+                                                        setEditandoItem(
+                                                          (p) => ({
+                                                            ...p,
+                                                            [item.id]: {
+                                                              ...p[item.id],
+                                                              valor: Number(
+                                                                ev.target.value,
+                                                              ),
+                                                            },
+                                                          }),
+                                                        )
                                                       }
                                                     />
                                                   </td>
                                                   <td>
+                                                    R$
+                                                    {(
+                                                      item.valorProduto *
+                                                      item.quantidade
+                                                    ).toFixed(2)}
+                                                  </td>
+                                                  <td>
                                                     <button
+                                                      className="btn-salvar"
                                                       onClick={() =>
                                                         saveEditItem(item.id)
                                                       }
@@ -535,6 +592,7 @@ function FiadoList() {
                                                       Salvar
                                                     </button>
                                                     <button
+                                                      className="btn-cancelar"
                                                       onClick={() =>
                                                         cancelEditItem(item.id)
                                                       }
@@ -561,27 +619,31 @@ function FiadoList() {
                                                     ).toFixed(2)}
                                                   </td>
                                                   <td>
-                                                    <button
-                                                      onClick={() =>
-                                                        removeItem(
-                                                          e.id,
-                                                          item.id,
-                                                          e.itens,
-                                                        )
-                                                      }
-                                                    >
-                                                      X
-                                                    </button>
-                                                    <button
-                                                      onClick={() =>
-                                                        startEditItem(
-                                                          e.id,
-                                                          item,
-                                                        )
-                                                      }
-                                                    >
-                                                      Editar
-                                                    </button>
+                                                    <div className="acoes">
+                                                      <button
+                                                        className="btn-editar"
+                                                        onClick={() =>
+                                                          startEditItem(
+                                                            e.id,
+                                                            item,
+                                                          )
+                                                        }
+                                                      >
+                                                        <EditIcon />
+                                                      </button>
+                                                      <button
+                                                        className="btn-deletar"
+                                                        onClick={() => {
+                                                          removeItem(
+                                                            e.id,
+                                                            item.id,
+                                                            e.itens,
+                                                          );
+                                                        }}
+                                                      >
+                                                        <DeleteIcon />
+                                                      </button>
+                                                    </div>
                                                   </td>
                                                 </>
                                               )}
@@ -592,6 +654,7 @@ function FiadoList() {
                                           <tr>
                                             <td>
                                               <button
+                                                className="btn-novo"
                                                 onClick={() =>
                                                   setModalItemAberto(e.id)
                                                 }
@@ -618,13 +681,15 @@ function FiadoList() {
           </tbody>
         </table>
       )}
+
+      {/* Modais  */}
       {modalItemAberto && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Novo Item</h3>
 
             <input
-              placeholder="Produto"
+              placeholder="Nome do produto"
               value={novoItem[modalItemAberto]?.nome || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
@@ -640,7 +705,7 @@ function FiadoList() {
             <input
               type="number"
               placeholder="Quantidade"
-              value={novoItem[modalItemAberto]?.quantidade || 1}
+              value={novoItem[modalItemAberto]?.quantidade || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
                   ...p,
@@ -656,7 +721,7 @@ function FiadoList() {
               type="number"
               step="0.01"
               placeholder="Valor"
-              value={novoItem[modalItemAberto]?.valor || 0}
+              value={novoItem[modalItemAberto]?.valor || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
                   ...p,
@@ -683,6 +748,57 @@ function FiadoList() {
           </div>
         </div>
       )}
+
+      {modalPagamentoAberto && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Registrar Pagamento</h3>
+
+            {(() => {
+              const saldo = saldos[modalPagamentoAberto];
+
+              if (saldo > 0) {
+                return <p>O cliente deve: R$ {saldo.toFixed(2)}</p>;
+              } else if (saldo < 0) {
+                return (
+                  <p>
+                    O cliente tem: R$ {Math.abs(saldo).toFixed(2)} de crédito
+                  </p>
+                );
+              } else {
+                return <p>Saldo zerado</p>;
+              }
+            })()}
+
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Digite o valor do pagamento"
+              value={valorPagamento}
+              onChange={(e) => setValorPagamento(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button onClick={confirmarPagamento}>Confirmar</button>
+
+              <button
+                onClick={() => {
+                  setModalPagamentoAberto(null);
+                  setValorPagamento("");
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <h2 className="total-geral">
+        {totalGeral > 0 && `Total a receber: R$ ${totalGeral.toFixed(2)}`}
+        {totalGeral < 0 &&
+          `Total em crédito: R$ ${Math.abs(totalGeral).toFixed(2)}`}
+        {totalGeral === 0 && `Saldo geral: zerado`}
+      </h2>
     </div>
   );
 }

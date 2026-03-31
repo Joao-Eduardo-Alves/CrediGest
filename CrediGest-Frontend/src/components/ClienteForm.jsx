@@ -90,7 +90,6 @@ function ClienteForm() {
             name="telefone"
             value={formData.telefone}
             onChange={handleChange}
-            required
             placeholder="(00) 00000-0000"
           />
         </div>
@@ -103,7 +102,6 @@ function ClienteForm() {
             name="observacao"
             value={formData.observacao}
             onChange={handleChange}
-            required
             placeholder="Observações sobre o cliente"
           />
         </div>

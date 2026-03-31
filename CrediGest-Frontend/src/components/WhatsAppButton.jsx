@@ -1,3 +1,5 @@
+import { WppIcon } from "./Icons";
+
 export default function WhatsAppButton({ telefone, nome, valor }) {
   const handleClick = () => {
     const formatted = telefone.replace(/\D/g, "");
@@ -10,5 +12,9 @@ Estou entrando em contato sobre seu fiado no valor de R$ ${valor}.`;
     window.open(url, "_blank");
   };
 
-  return <button onClick={handleClick}>Whatsapp</button>;
+  return (
+    <button className="btn-wpp" onClick={handleClick}>
+      <WppIcon />
+    </button>
+  );
 }

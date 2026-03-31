@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import clienteService from "../services/clienteService";
 import WhatsAppButton from "./WhatsAppButton";
+import { EditIcon, DeleteIcon } from "./Icons";
 import "./ClienteList.css";
 
 function ClienteList() {
@@ -82,7 +83,7 @@ function ClienteList() {
               <th>Nome</th>
               <th>Telefone</th>
               <th>Observações</th>
-              <th>Ações</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -93,25 +94,27 @@ function ClienteList() {
                 <td>{cliente.telefone}</td>
                 <td>{cliente.observacao}</td>
                 <td>
-                  <WhatsAppButton
-                    telefone={cliente.telefone}
-                    nome={cliente.nome}
-                    valor={saldos[cliente.id]?.toFixed(2) ?? "0.00"}
-                  />
-                  <button
-                    className="btn-editar"
-                    onClick={() =>
-                      (window.location.href = `/clientes/${cliente.id}`)
-                    }
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="btn-deletar"
-                    onClick={() => handleDelete(cliente.id)}
-                  >
-                    Deletar
-                  </button>
+                  <div className="acoes">
+                    <WhatsAppButton
+                      telefone={cliente.telefone}
+                      nome={cliente.nome}
+                      valor={saldos[cliente.id]?.toFixed(2) ?? "0.00"}
+                    />
+                    <button
+                      className="btn-editar"
+                      onClick={() =>
+                        (window.location.href = `/clientes/${cliente.id}`)
+                      }
+                    >
+                      <EditIcon />
+                    </button>
+                    <button
+                      className="btn-deletar"
+                      onClick={() => handleDelete(cliente.id)}
+                    >
+                      <DeleteIcon />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
