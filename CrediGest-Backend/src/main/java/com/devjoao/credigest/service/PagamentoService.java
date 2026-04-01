@@ -1,5 +1,7 @@
 package com.devjoao.credigest.service;
 
+import com.devjoao.credigest.dto.ClienteDTO;
+import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.dto.PagamentoDTO;
 import com.devjoao.credigest.entity.Cliente;
 import com.devjoao.credigest.entity.Fiado;
@@ -75,5 +77,31 @@ public class PagamentoService {
         Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado"));
         pagamentoRepository.delete(pagamento);
+    }
+
+    public PagamentoDTO editar(Long id, PagamentoDTO dto) {
+        Pagamento pagamento = pagamentoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado"));
+
+        if (dto.getData() != null) {
+            pagamento.setData(dto.getData());
+        }
+
+        if (dto.getValorPago() != null) {
+            pagamento.setValor(dto.getValorPago());
+        }
+
+        Pagamento pagamentoSalvo = pagamentoRepository.save(pagamento);
+
+        return PagamentoToDTO(pagamentoSalvo);
+    }
+
+    //metodo conversor de entity para DTO
+    private PagamentoDTO PagamentoToDTO(Pagamento pagamento) {
+        PagamentoDTO dto = new PagamentoDTO();
+        dto.setId(pagamento.getId());
+        dto.setData(pagamento.getData());
+        dto.setValorPago(pagamento.getValor());
+        return dto;
     }
 }

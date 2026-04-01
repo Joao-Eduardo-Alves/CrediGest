@@ -1,7 +1,7 @@
 import api from "./api";
 
 const clienteService = {
-  listarTodos: () => api.get("/clientes"),
+  listar: () => api.get("/clientes"),
 
   obterPorId: (id) => api.get(`/clientes/${id}`),
 

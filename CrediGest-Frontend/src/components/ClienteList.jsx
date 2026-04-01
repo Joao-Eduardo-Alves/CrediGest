@@ -38,7 +38,7 @@ function ClienteList() {
     setLoading(true);
     setError(null);
     try {
-      const data = await clienteService.listarTodos();
+      const data = await clienteService.listar();
       setClientes(data);
     } catch (err) {
       setError("Erro ao carregar clientes");

@@ -6,17 +6,27 @@ import "./FiadoList.css";
 function FiadoList() {
   const [fiados, setFiados] = useState({});
   const [pagamentos, setPagamentos] = useState({});
-  const [exibirFiados, setExibirFiados] = useState({}); //exibirFiados
-  const [exibirItens, setExibirItens] = useState({}); //exibirItens
+  const [exibirFiados, setExibirFiados] = useState({});
+  const [exibirItens, setExibirItens] = useState({});
   const [novoItem, setNovoItem] = useState({});
   const [editandoItem, setEditandoItem] = useState({});
   const [editandoFiado, setEditandoFiado] = useState({});
+  const [editandoPagamento, setEditandoPagamento] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saldos, setSaldos] = useState({});
   const [modalItemAberto, setModalItemAberto] = useState(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(null);
   const [valorPagamento, setValorPagamento] = useState("");
+
+  const formatDatetimeForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "";
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 16);
+  };
 
   useEffect(() => {
     carregarFiados();
@@ -41,7 +51,7 @@ function FiadoList() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fiadoService.listarTodos();
+      const data = await fiadoService.listar();
       const grouped = data.reduce((acc, f) => {
         if (!acc[f.clienteId]) acc[f.clienteId] = [];
         acc[f.clienteId].push(f);
@@ -126,7 +136,7 @@ function FiadoList() {
     setEditandoFiado((p) => ({
       ...p,
       [fiadoId]: {
-        data: fiado.data,
+        data: formatDatetimeForInput(fiado.data),
         observacao: fiado.observacao ?? "",
       },
     }));
@@ -147,12 +157,48 @@ function FiadoList() {
       return;
     }
     try {
-      console.log(dados);
       await fiadoService.editar(fiadoId, {
         data: dados.data,
         observacao: dados.observacao,
       });
       cancelEditFiado(fiadoId);
+      carregarFiados();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao atualizar fiado");
+    }
+  };
+
+  const startEditPagamento = (pagamentoId, pagamento) => {
+    setEditandoPagamento((p) => ({
+      ...p,
+      [pagamentoId]: {
+        data: formatDatetimeForInput(pagamento.data),
+        valorPago: pagamento.valorPago ?? pagamento.valor,
+      },
+    }));
+  };
+
+  const cancelEditPagamento = (pagamentoId) => {
+    setEditandoPagamento((p) => {
+      const novo = { ...p };
+      delete novo[pagamentoId];
+      return novo;
+    });
+  };
+
+  const saveEditPagamento = async (pagamentoId) => {
+    const dados = editandoPagamento[pagamentoId];
+    if (!dados || !dados.data || !dados.valorPago) {
+      alert("Preencha todos os campos para salvar");
+      return;
+    }
+    try {
+      await fiadoService.editarPagamento(pagamentoId, {
+        data: dados.data,
+        valorPago: Number(dados.valorPago),
+      });
+      cancelEditPagamento(pagamentoId);
       carregarFiados();
     } catch (err) {
       console.error(err);
@@ -353,9 +399,7 @@ function FiadoList() {
                           </thead>
                           <tbody>
                             {extrato.map((e) => (
-                              <React.Fragment
-                                key={e.id || `${e.tipo}-${e.data}`}
-                              >
+                              <React.Fragment key={`${e.tipo}-${e.id}`}>
                                 <tr
                                   className={
                                     e.tipo === "fiado"
@@ -374,14 +418,16 @@ function FiadoList() {
                                     }
                                   }}
                                 >
-                                  {editandoFiado[e.id] && e.tipo === "fiado" ? (
+                                  {e.tipo === "fiado" && editandoFiado[e.id] ? (
                                     <>
-                                      <td> {exibirItens[e.id] ? "▼" : "▶"}</td>
+                                      <td>{exibirItens[e.id] ? "▼" : "▶"}</td>
 
                                       <td>
                                         <input
                                           type="datetime-local"
-                                          value={editandoFiado[e.id].data}
+                                          value={
+                                            editandoFiado[e.id]?.data || ""
+                                          }
                                           onChange={(ev) =>
                                             setEditandoFiado((p) => ({
                                               ...p,
@@ -432,6 +478,76 @@ function FiadoList() {
                                         </button>
                                       </td>
                                     </>
+                                  ) : e.tipo === "pagamento" &&
+                                    editandoPagamento[e.id] ? (
+                                    <>
+                                      <td></td>
+
+                                      <td>
+                                        <input
+                                          type="datetime-local"
+                                          value={
+                                            editandoPagamento[e.id]?.data || ""
+                                          }
+                                          onChange={(ev) =>
+                                            setEditandoPagamento((p) => ({
+                                              ...p,
+                                              [e.id]: {
+                                                ...p[e.id],
+                                                data: ev.target.value,
+                                              },
+                                            }))
+                                          }
+                                        />
+                                      </td>
+
+                                      <td>Pagamento</td>
+
+                                      <td>-</td>
+
+                                      <td>-</td>
+
+                                      <td>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={
+                                            editandoPagamento[e.id]
+                                              ?.valorPago ?? ""
+                                          }
+                                          onChange={(ev) =>
+                                            setEditandoPagamento((p) => ({
+                                              ...p,
+                                              [e.id]: {
+                                                ...p[e.id],
+                                                valorPago: Number(
+                                                  ev.target.value,
+                                                ),
+                                              },
+                                            }))
+                                          }
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <button
+                                          className="btn-salvar"
+                                          onClick={() =>
+                                            saveEditPagamento(e.id)
+                                          }
+                                        >
+                                          Salvar
+                                        </button>
+                                        <button
+                                          className="btn-cancelar"
+                                          onClick={() =>
+                                            cancelEditPagamento(e.id)
+                                          }
+                                        >
+                                          Cancelar
+                                        </button>
+                                      </td>
+                                    </>
                                   ) : (
                                     <>
                                       <td>
@@ -474,25 +590,35 @@ function FiadoList() {
                                             <>
                                               <button
                                                 className="btn-editar"
-                                                onClick={() => {
-                                                  startEditFiado(e.id, e);
-                                                }}
+                                                onClick={() =>
+                                                  startEditFiado(e.id, e)
+                                                }
                                               >
                                                 <EditIcon />
                                               </button>
 
                                               <button
                                                 className="btn-deletar"
-                                                onClick={() => {
-                                                  handleDeleteFiado(e.id);
-                                                }}
+                                                onClick={() =>
+                                                  handleDeleteFiado(e.id)
+                                                }
                                               >
                                                 <DeleteIcon />
                                               </button>
                                             </>
                                           )}
+
                                           {e.tipo === "pagamento" && (
                                             <>
+                                              <button
+                                                className="btn-editar"
+                                                onClick={() =>
+                                                  startEditPagamento(e.id, e)
+                                                }
+                                              >
+                                                <EditIcon />
+                                              </button>
+
                                               <button
                                                 className="btn-deletar"
                                                 onClick={() =>
@@ -535,7 +661,7 @@ function FiadoList() {
                                                     <input
                                                       value={
                                                         editandoItem[item.id]
-                                                          .nome
+                                                          ?.nome || ""
                                                       }
                                                       onChange={(ev) =>
                                                         setEditandoItem(

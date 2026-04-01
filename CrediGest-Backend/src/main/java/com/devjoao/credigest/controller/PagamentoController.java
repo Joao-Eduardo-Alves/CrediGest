@@ -1,5 +1,6 @@
 package com.devjoao.credigest.controller;
 
+import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.dto.PagamentoDTO;
 import com.devjoao.credigest.service.PagamentoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,5 +43,13 @@ public class PagamentoController {
     public ResponseEntity<Void> excluirPagamento(@PathVariable Long pagamentoId) {
         pagamentoService.excluirPagamento(pagamentoId);
         return ResponseEntity.noContent().build();
+    }
+    @Operation(summary = "Editar um pagamento")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagamento editado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado")})
+    @PatchMapping("/editar/{pagamentoId}")
+    public PagamentoDTO editar(@PathVariable Long pagamentoId, @RequestBody PagamentoDTO pagamentoDto) {
+        return pagamentoService.editar(pagamentoId, pagamentoDto);
     }
 }
