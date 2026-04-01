@@ -85,7 +85,8 @@ function ClienteForm() {
         <div className="form-group">
           <label htmlFor="telefone">Telefone</label>
           <input
-            type="text"
+            type="tel"
+            maxLength={11}
             id="telefone"
             name="telefone"
             value={formData.telefone}
