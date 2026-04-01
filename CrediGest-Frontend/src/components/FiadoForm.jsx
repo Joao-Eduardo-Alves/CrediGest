@@ -126,6 +126,17 @@ function FiadoForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.clienteId) {
+      toast.error("Selecione um cliente antes de salvar o fiado");
+      return;
+    }
+
+    if (!formData.itens || formData.itens.length === 0) {
+      toast.error("Adicione pelo menos um item antes de salvar o fiado");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -147,6 +158,8 @@ function FiadoForm() {
     } catch (err) {
       setError(err.message || "Erro ao salvar fiado");
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
