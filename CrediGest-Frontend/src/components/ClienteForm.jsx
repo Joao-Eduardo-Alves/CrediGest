@@ -51,6 +51,11 @@ function ClienteForm() {
       return;
     }
 
+    if (formData.observacao && formData.observacao.length > 500) {
+      toast.error("A observação não pode exceder 500 caracteres");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -105,6 +110,7 @@ function ClienteForm() {
           <label htmlFor="observacao">Observação</label>
           <input
             type="text"
+            maxLength={500}
             id="observacao"
             name="observacao"
             value={formData.observacao}
