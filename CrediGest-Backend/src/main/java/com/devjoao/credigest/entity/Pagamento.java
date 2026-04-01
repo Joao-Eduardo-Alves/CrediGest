@@ -14,7 +14,7 @@ public class Pagamento {
 
     @NotNull(message = "O cliente é obrigatório")
     @ManyToOne(optional = false)
-    @JoinColumn(name = "cliente_id")
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
     @NotNull(message = "O valor do pagamento é obrigatório")

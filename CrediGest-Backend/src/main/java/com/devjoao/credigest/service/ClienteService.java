@@ -1,10 +1,12 @@
 package com.devjoao.credigest.service;
 
 import com.devjoao.credigest.dto.ClienteDTO;
-import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.entity.Cliente;
 import com.devjoao.credigest.entity.Fiado;
+import com.devjoao.credigest.entity.Pagamento;
 import com.devjoao.credigest.repository.ClienteRepository;
+import com.devjoao.credigest.repository.FiadoRepository;
+import com.devjoao.credigest.repository.PagamentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,12 @@ public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private FiadoRepository fiadoRepository;
+
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
 
     public List<ClienteDTO> listar() {
 
@@ -69,6 +77,19 @@ public class ClienteService {
 
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+
+        // Verifica se existem fiados relacionados
+        List<Fiado> fiados = fiadoRepository.findByClienteId(cliente.getId());
+        if (!fiados.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível deletar o cliente pois existem fiados relacionados");
+        }
+
+        // Verifica se existem pagamentos relacionados
+        List<Pagamento> pagamentos = pagamentoRepository.findByClienteId(cliente.getId());
+        if (!pagamentos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível deletar o cliente pois existem pagamentos relacionados");
+        }
+
         clienteRepository.delete(cliente);
     }
 
