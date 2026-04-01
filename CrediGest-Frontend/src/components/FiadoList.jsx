@@ -3,6 +3,8 @@ import fiadoService from "../services/fiadoService";
 import { EditIcon, DeleteIcon, PayIcon } from "./Icons";
 import "./FiadoList.css";
 
+import toast from "../utils/toast";
+
 function FiadoList() {
   const [fiados, setFiados] = useState({});
   const [pagamentos, setPagamentos] = useState({});
@@ -91,16 +93,16 @@ function FiadoList() {
 
   const handleAddItem = async (fiadoId) => {
     const item = novoItem[fiadoId];
-    if (!item || !item.nome || item.quantidade <= 0 || item.valor <= 0) {
-      alert("Preencha todos os campos corretamente");
+    if (!item || !item.nome || !item.quantidade || !item.valor) {
+      toast.warning("Preencha todos os campos");
       return;
     }
     try {
       await fiadoService.adicionarItens(fiadoId, [
         {
           nomeProduto: item.nome,
-          quantidade: item.quantidade,
-          valorProduto: item.valor,
+          quantidade: parseFloat(item.quantidade) || 0,
+          valorProduto: parseFloat(item.valor) || 0,
         },
       ]);
       setNovoItem((p) => ({
@@ -108,9 +110,10 @@ function FiadoList() {
         [fiadoId]: { nome: "", quantidade: 1, valor: 0 },
       }));
       carregarFiados();
+      toast.success("Item adicionado com sucesso");
     } catch (err) {
       console.error(err);
-      alert("Erro ao adicionar item");
+      toast.error("Erro ao adicionar item");
     }
   };
 
@@ -128,7 +131,7 @@ function FiadoList() {
       carregarFiados();
     } catch (err) {
       console.error(err);
-      alert("Erro ao remover item");
+      toast.error("Erro ao remover item");
     }
   };
 
@@ -152,10 +155,22 @@ function FiadoList() {
 
   const saveEditFiado = async (fiadoId) => {
     const dados = editandoFiado[fiadoId];
-    if (!dados || !dados.data) {
-      alert("Preencha todos os campos para salvar");
+    if (!dados?.data) {
+      toast.warning("Preencha a data para salvar");
       return;
     }
+    const dataSelecionada = new Date(dados.data);
+    const hoje = new Date();
+
+    // Zera hora pra comparar so a data
+    hoje.setHours(0, 0, 0, 0);
+    dataSelecionada.setHours(0, 0, 0, 0);
+
+    if (dataSelecionada > hoje) {
+      toast.error("A data não pode ser futura");
+      return;
+    }
+
     try {
       await fiadoService.editar(fiadoId, {
         data: dados.data,
@@ -163,9 +178,10 @@ function FiadoList() {
       });
       cancelEditFiado(fiadoId);
       carregarFiados();
+      toast.success("Fiado atualizado com sucesso");
     } catch (err) {
       console.error(err);
-      alert("Erro ao atualizar fiado");
+      toast.error("Erro ao atualizar fiado");
     }
   };
 
@@ -174,7 +190,7 @@ function FiadoList() {
       ...p,
       [pagamentoId]: {
         data: formatDatetimeForInput(pagamento.data),
-        valorPago: pagamento.valorPago ?? pagamento.valor,
+        valorPago: pagamento.valorPago,
       },
     }));
   };
@@ -189,20 +205,40 @@ function FiadoList() {
 
   const saveEditPagamento = async (pagamentoId) => {
     const dados = editandoPagamento[pagamentoId];
-    if (!dados || !dados.data || !dados.valorPago) {
-      alert("Preencha todos os campos para salvar");
+    if (!dados?.data) {
+      toast.error("Preencha a data para salvar");
+      return;
+    }
+    const dataSelecionada = new Date(dados.data);
+    const hoje = new Date();
+
+    // Zera hora pra comparar so a data
+    hoje.setHours(0, 0, 0, 0);
+    dataSelecionada.setHours(0, 0, 0, 0);
+
+    if (dataSelecionada > hoje) {
+      toast.error("A data não pode ser futura");
+      return;
+    }
+
+    const valor = parseFloat(dados.valorPago);
+
+    if (!(valor > 0)) {
+      toast.error("O valor deve ser maior que zero");
       return;
     }
     try {
       await fiadoService.editarPagamento(pagamentoId, {
         data: dados.data,
-        valorPago: Number(dados.valorPago),
+        valorPago: valor,
       });
+
       cancelEditPagamento(pagamentoId);
       carregarFiados();
+      toast.success("Pagamento atualizado com sucesso");
     } catch (err) {
       console.error(err);
-      alert("Erro ao atualizar fiado");
+      toast.error("Erro ao atualizar pagamento");
     }
   };
 
@@ -229,7 +265,7 @@ function FiadoList() {
   const saveEditItem = async (itemId) => {
     const dados = editandoItem[itemId];
     if (!dados || !dados.nome || dados.quantidade <= 0 || dados.valor <= 0) {
-      alert("Preencha todos os campos para salvar");
+      toast.error("Preencha todos os campos para salvar");
       return;
     }
     try {
@@ -242,7 +278,7 @@ function FiadoList() {
       carregarFiados();
     } catch (err) {
       console.error(err);
-      alert("Erro ao atualizar item");
+      toast.error("Erro ao atualizar item");
     }
   };
 
@@ -251,9 +287,10 @@ function FiadoList() {
     try {
       await fiadoService.deletar(fiadoId);
       carregarFiados();
+      toast.success("Fiado deletado com sucesso");
     } catch (err) {
       console.error(err);
-      alert("Erro ao deletar fiado");
+      toast.error("Erro ao deletar fiado");
     }
   };
 
@@ -267,31 +304,33 @@ function FiadoList() {
       const valor = valorPagamento;
 
       if (!valor || isNaN(valor) || Number(valor) <= 0) {
-        alert("Valor inválido");
+        toast.error("Valor inválido");
         return;
       }
 
       await fiadoService.registrarPagamento(clienteId, {
         valorPago: Number(valor),
       });
-      alert("Pagamento registrado!");
+      toast.success("Pagamento registrado com sucesso");
       setModalPagamentoAberto(null);
       setValorPagamento("");
       carregarFiados();
     } catch (err) {
       console.error(err);
-      alert("Erro ao processar pagamento");
+      toast.error("Erro ao processar pagamento");
     }
   };
   const handleDeletePagamento = async (pagamentoId) => {
-    if (!window.confirm("Deseja remover este pagamento?")) return;
+    if (!window.confirm("Tem certeza que deseja deletar este pagamento?"))
+      return;
 
     try {
       await fiadoService.excluirPagamento(pagamentoId);
       carregarFiados();
+      toast.success("Pagamento deletado com sucesso");
     } catch (err) {
       console.error(err);
-      alert("Erro ao remover pagamento");
+      toast.error("Erro ao remover pagamento");
     }
   };
 
@@ -444,6 +483,7 @@ function FiadoList() {
 
                                       <td>
                                         <input
+                                          placeholder="Digite a observação"
                                           value={
                                             editandoFiado[e.id].observacao ?? ""
                                           }
@@ -511,6 +551,7 @@ function FiadoList() {
                                         <input
                                           type="number"
                                           step="0.01"
+                                          min="0.01"
                                           value={
                                             editandoPagamento[e.id]
                                               ?.valorPago ?? ""
@@ -520,9 +561,7 @@ function FiadoList() {
                                               ...p,
                                               [e.id]: {
                                                 ...p[e.id],
-                                                valorPago: Number(
-                                                  ev.target.value,
-                                                ),
+                                                valorPago: ev.target.value,
                                               },
                                             }))
                                           }
@@ -659,6 +698,7 @@ function FiadoList() {
                                                 <>
                                                   <td>
                                                     <input
+                                                      placeholder="Nome do produto"
                                                       value={
                                                         editandoItem[item.id]
                                                           ?.nome || ""
@@ -680,6 +720,8 @@ function FiadoList() {
                                                   <td>
                                                     <input
                                                       type="number"
+                                                      placeholder="1"
+                                                      min="1"
                                                       value={
                                                         editandoItem[item.id]
                                                           .quantidade
@@ -691,10 +733,7 @@ function FiadoList() {
                                                             [item.id]: {
                                                               ...p[item.id],
                                                               quantidade:
-                                                                Number(
-                                                                  ev.target
-                                                                    .value,
-                                                                ),
+                                                                ev.target.value,
                                                             },
                                                           }),
                                                         )
@@ -704,6 +743,8 @@ function FiadoList() {
                                                   <td>
                                                     <input
                                                       type="number"
+                                                      placeholder="Valor"
+                                                      min="0.01"
                                                       step="0.01"
                                                       value={
                                                         editandoItem[item.id]
@@ -715,9 +756,8 @@ function FiadoList() {
                                                             ...p,
                                                             [item.id]: {
                                                               ...p[item.id],
-                                                              valor: Number(
+                                                              valor:
                                                                 ev.target.value,
-                                                              ),
                                                             },
                                                           }),
                                                         )
@@ -854,6 +894,7 @@ function FiadoList() {
             <input
               type="number"
               placeholder="Quantidade"
+              min="1"
               value={novoItem[modalItemAberto]?.quantidade || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
@@ -870,13 +911,14 @@ function FiadoList() {
               type="number"
               step="0.01"
               placeholder="Valor"
+              min="0.01"
               value={novoItem[modalItemAberto]?.valor || ""}
               onChange={(e) =>
                 setNovoItem((p) => ({
                   ...p,
                   [modalItemAberto]: {
                     ...p[modalItemAberto],
-                    valor: Number(e.target.value),
+                    valor: e.target.value,
                   },
                 }))
               }

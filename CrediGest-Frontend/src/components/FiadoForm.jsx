@@ -94,8 +94,8 @@ function FiadoForm() {
 
     const item = {
       nomeProduto: novoItem.nomeProduto,
-      valorProduto: parseFloat(novoItem.valorProduto),
-      quantidade: parseInt(novoItem.quantidade),
+      valorProduto: parseFloat(novoItem.valorProduto) || 0,
+      quantidade: parseFloat(novoItem.quantidade) || 1,
     };
 
     setFormData((prev) => ({
@@ -221,6 +221,7 @@ function FiadoForm() {
                 value={novoItem.valorProduto}
                 onChange={handleChangeNovoItem}
                 step="0.01"
+                min="0.01"
                 placeholder="0.00"
               />
             </div>

@@ -1,4 +1,6 @@
 import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import ClienteList from "./components/ClienteList";
 import ClienteForm from "./components/ClienteForm";
@@ -10,6 +12,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app">
+        <ToastContainer />
         <nav className="navbar">
           <div className="nav-container">
             <Link to="/" className="nav-logo">
