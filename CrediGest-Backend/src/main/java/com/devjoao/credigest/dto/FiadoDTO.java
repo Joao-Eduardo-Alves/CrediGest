@@ -2,8 +2,7 @@ package com.devjoao.credigest.dto;
 
 import com.devjoao.credigest.validation.OnCreate;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +13,7 @@ public class FiadoDTO {
     private Long id;
 
     @NotNull(groups = OnCreate.class, message = "A data é obrigatória")
+    @PastOrPresent(groups = OnCreate.class, message = "A data não pode ser futura")
     private LocalDateTime data;
 
     @NotNull(groups = OnCreate.class, message = "Id do cliente é obrigatório")
@@ -25,6 +25,7 @@ public class FiadoDTO {
     @NotEmpty(groups = OnCreate.class, message = "O fiado deve ter pelo menos um item")
     private List<ItemFiadoDTO> itens;
 
+    @Size(max = 500, message = "A observação não pode ter mais de 500 caracteres")
     private String observacao;
 
     private BigDecimal valorTotal;

@@ -1,9 +1,9 @@
 package com.devjoao.credigest.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +15,20 @@ public class Fiado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "A data do fiado é obrigatória")
+    @PastOrPresent(message = "A data não pode ser futura")
     private LocalDateTime data;
 
+    @NotNull(message = "O cliente é obrigatório")
     @ManyToOne(optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
+    @NotEmpty(message = "Um fiado deve ter pelo menos um item")
     @OneToMany(mappedBy = "fiado", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemFiado> itens = new ArrayList<>();
 
+    @Size(max = 500, message = "A observação não pode ter mais de 500 caracteres")
     private String observacao;
 
     public Long getId() {

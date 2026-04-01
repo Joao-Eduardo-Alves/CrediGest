@@ -1,16 +1,21 @@
 package com.devjoao.credigest.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class ClienteDTO {
 
     private Long id;
 
-    @NotBlank(message = "Nome obrigatorio")
+    @NotBlank(message = "O nome do cliente é obrigatório")
+
     private String nome;
 
+    @Pattern(regexp = "^(\\(?\\d{2}\\)?\\s?)?\\d{4,5}-?\\d{4}$|^$", message = "Telefone inválido")
     private String telefone;
 
+    @Size(max = 500, message = "A observação não pode ter mais de 500 caracteres")
     private String observacao;
 
     public Long getId() {

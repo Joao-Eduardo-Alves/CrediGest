@@ -1,6 +1,7 @@
 package com.devjoao.credigest.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 public class Cliente {
@@ -9,11 +10,14 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O nome do cliente é obrigatório")
     @Column(nullable = false)
     private String nome;
 
+    @Pattern(regexp = "^(\\(?\\d{2}\\)?\\s?)?\\d{4,5}-?\\d{4}$|^$", message = "Telefone inválido")
     private String telefone;
 
+    @Size(max = 500, message = "A observação não pode ter mais de 500 caracteres")
     private String observacao;
 
     public String getNome() {

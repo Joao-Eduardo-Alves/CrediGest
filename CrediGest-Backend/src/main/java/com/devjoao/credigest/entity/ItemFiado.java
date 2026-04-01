@@ -1,6 +1,7 @@
 package com.devjoao.credigest.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
@@ -11,12 +12,17 @@ public class ItemFiado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O nome do produto é obrigatório")
     private String nomeProduto;
 
+    @NotNull(message = "O valor do produto é obrigatório")
+    @DecimalMin(value = "0.01", inclusive = true, message = "O valor do produto deve ser maior que zero")
     private BigDecimal valorProduto;
 
+    @Min(value = 1, message = "A quantidade deve ser no mínimo 1")
     private int quantidade;
 
+    @NotNull(message = "O fiado é obrigatório")
     @ManyToOne (optional = false)
     @JoinColumn(name = "fiado_id", nullable = false)
     private Fiado fiado;
