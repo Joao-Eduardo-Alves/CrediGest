@@ -118,6 +118,11 @@ function FiadoForm() {
   }, 0);
 
   const removerItem = (index) => {
+    const confirmacao = window.confirm(
+      "Tem certeza que deseja remover este item do fiado?",
+    );
+    if (!confirmacao) return;
+
     setFormData((prev) => ({
       ...prev,
       itens: prev.itens.filter((_, i) => i !== index),
