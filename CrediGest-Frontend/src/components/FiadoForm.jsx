@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import fiadoService from "../services/fiadoService";
 import clienteService from "../services/clienteService";
+import { DeleteIcon } from "./Icons";
+
+import toast from "../utils/toast";
+
 import "./FiadoForm.css";
 
 function FiadoForm() {
@@ -88,14 +92,14 @@ function FiadoForm() {
       !novoItem.valorProduto ||
       !novoItem.quantidade
     ) {
-      alert("Preencha todos os campos do item");
+      toast.error("Preencha todos os campos do item");
       return;
     }
 
     const item = {
       nomeProduto: novoItem.nomeProduto,
-      valorProduto: parseFloat(novoItem.valorProduto),
-      quantidade: parseInt(novoItem.quantidade),
+      valorProduto: parseFloat(novoItem.valorProduto) || 0,
+      quantidade: parseFloat(novoItem.quantidade) || 1,
     };
 
     setFormData((prev) => ({
@@ -114,6 +118,11 @@ function FiadoForm() {
   }, 0);
 
   const removerItem = (index) => {
+    const confirmacao = window.confirm(
+      "Tem certeza que deseja remover este item do fiado?",
+    );
+    if (!confirmacao) return;
+
     setFormData((prev) => ({
       ...prev,
       itens: prev.itens.filter((_, i) => i !== index),
@@ -122,6 +131,17 @@ function FiadoForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.clienteId) {
+      toast.error("Selecione um cliente antes de salvar o fiado");
+      return;
+    }
+
+    if (!formData.itens || formData.itens.length === 0) {
+      toast.error("Adicione pelo menos um item antes de salvar o fiado");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -143,6 +163,8 @@ function FiadoForm() {
     } catch (err) {
       setError(err.message || "Erro ao salvar fiado");
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,6 +243,7 @@ function FiadoForm() {
                 value={novoItem.valorProduto}
                 onChange={handleChangeNovoItem}
                 step="0.01"
+                min="0.01"
                 placeholder="0.00"
               />
             </div>
@@ -272,10 +295,10 @@ function FiadoForm() {
                       <td>
                         <button
                           type="button"
-                          className="btn-remover"
+                          className="btn-deletar"
                           onClick={() => removerItem(index)}
                         >
-                          X
+                          <DeleteIcon />
                         </button>
                       </td>
                     </tr>

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import clienteService from "../services/clienteService";
 import "./ClienteForm.css";
 
+import toast from "../utils/toast";
+
 function ClienteForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,7 +35,6 @@ function ClienteForm() {
     }
   };
 
-  // Atualiza o estado do formulário conforme o usuário digita
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -42,9 +43,19 @@ function ClienteForm() {
     }));
   };
 
-  // Envia os dados do formulário para criar ou atualizar o cliente
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.nome || formData.nome.trim() === "") {
+      toast.error("O nome do cliente é obrigatório");
+      return;
+    }
+
+    if (formData.observacao && formData.observacao.length > 500) {
+      toast.error("A observação não pode exceder 500 caracteres");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -77,15 +88,16 @@ function ClienteForm() {
             name="nome"
             value={formData.nome}
             onChange={handleChange}
-            required
             placeholder="Nome do cliente"
+            required
           />
         </div>
 
         <div className="form-group">
           <label htmlFor="telefone">Telefone</label>
           <input
-            type="text"
+            type="tel"
+            maxLength={11}
             id="telefone"
             name="telefone"
             value={formData.telefone}
@@ -98,6 +110,7 @@ function ClienteForm() {
           <label htmlFor="observacao">Observação</label>
           <input
             type="text"
+            maxLength={500}
             id="observacao"
             name="observacao"
             value={formData.observacao}

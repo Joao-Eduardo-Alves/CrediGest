@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import clienteService from "../services/clienteService";
 import WhatsAppButton from "./WhatsAppButton";
 import { EditIcon, DeleteIcon } from "./Icons";
+
+import toast from "../utils/toast";
+
 import "./ClienteList.css";
 
 function ClienteList() {
@@ -20,7 +23,7 @@ function ClienteList() {
       for (const cliente of clientes) {
         try {
           const saldo = await clienteService.obterSaldo(cliente.id);
-          novosSaldos[cliente.id] = saldo ?? 0; // garante número
+          novosSaldos[cliente.id] = saldo ?? 0;
         } catch (err) {
           console.error(`Erro ao buscar saldo do cliente ${cliente.id}`, err);
           novosSaldos[cliente.id] = 0;
@@ -53,6 +56,7 @@ function ClienteList() {
       try {
         await clienteService.deletar(id);
         setClientes(clientes.filter((c) => c.id !== id));
+        toast.success("Cliente deletado com sucesso");
       } catch (err) {
         setError("Erro ao deletar cliente");
         console.error(err);
