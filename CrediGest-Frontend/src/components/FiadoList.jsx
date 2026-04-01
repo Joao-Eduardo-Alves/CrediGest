@@ -94,7 +94,7 @@ function FiadoList() {
   const handleAddItem = async (fiadoId) => {
     const item = novoItem[fiadoId];
     if (!item || !item.nome || !item.quantidade || !item.valor) {
-      toast.warning("Preencha todos os campos");
+      toast.error("Preencha todos os campos");
       return;
     }
     try {
@@ -129,6 +129,7 @@ function FiadoList() {
     try {
       await fiadoService.removerItem(fiadoId, itemId);
       carregarFiados();
+      toast.success("Item removido com sucesso");
     } catch (err) {
       console.error(err);
       toast.error("Erro ao remover item");
@@ -276,6 +277,7 @@ function FiadoList() {
       });
       cancelEditItem(itemId);
       carregarFiados();
+      toast.success("Item atualizado com sucesso");
     } catch (err) {
       console.error(err);
       toast.error("Erro ao atualizar item");

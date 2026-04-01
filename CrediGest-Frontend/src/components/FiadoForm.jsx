@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import fiadoService from "../services/fiadoService";
 import clienteService from "../services/clienteService";
+import { DeleteIcon } from "./Icons";
+
+import toast from "../utils/toast";
+
 import "./FiadoForm.css";
 
 function FiadoForm() {
@@ -88,7 +92,7 @@ function FiadoForm() {
       !novoItem.valorProduto ||
       !novoItem.quantidade
     ) {
-      alert("Preencha todos os campos do item");
+      toast.error("Preencha todos os campos do item");
       return;
     }
 
@@ -273,10 +277,10 @@ function FiadoForm() {
                       <td>
                         <button
                           type="button"
-                          className="btn-remover"
+                          className="btn-deletar"
                           onClick={() => removerItem(index)}
                         >
-                          X
+                          <DeleteIcon />
                         </button>
                       </td>
                     </tr>
