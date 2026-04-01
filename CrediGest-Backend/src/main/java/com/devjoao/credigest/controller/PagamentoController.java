@@ -1,9 +1,13 @@
 package com.devjoao.credigest.controller;
 
+import com.devjoao.credigest.dto.FiadoDTO;
 import com.devjoao.credigest.dto.PagamentoDTO;
 import com.devjoao.credigest.service.PagamentoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,5 +33,23 @@ public class PagamentoController {
     @GetMapping("/historico/{clienteId}")
     public List<PagamentoDTO> ListarPagamentos(@PathVariable Long clienteId) {
         return pagamentoService.listarPagamentos(clienteId);
+    }
+
+    @Operation(summary = "Remover um pagamento de um fiado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Pagamento excluido com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado")})
+    @DeleteMapping("/excluir/{pagamentoId}")
+    public ResponseEntity<Void> excluirPagamento(@PathVariable Long pagamentoId) {
+        pagamentoService.excluirPagamento(pagamentoId);
+        return ResponseEntity.noContent().build();
+    }
+    @Operation(summary = "Editar um pagamento")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagamento editado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado")})
+    @PatchMapping("/editar/{pagamentoId}")
+    public PagamentoDTO editar(@PathVariable Long pagamentoId, @RequestBody PagamentoDTO pagamentoDto) {
+        return pagamentoService.editar(pagamentoId, pagamentoDto);
     }
 }
