@@ -91,7 +91,7 @@ function FiadoList() {
         estrutura[c.id] = fiadosAgrupados[c.id] || [];
       });
 
-      const estruturaFiltrada = Object.fromEntries(
+      const clientesComHistoricoFinanceiro = Object.fromEntries(
         Object.entries(estrutura).filter(([clienteId]) => {
           const temFiado = (fiadosAgrupados[clienteId] || []).length > 0;
           const temPagamento = (pagamentos[clienteId] || []).length > 0;
@@ -100,7 +100,7 @@ function FiadoList() {
         }),
       );
 
-      setClientesComHistoricoFinanceiro(estruturaFiltrada);
+      setClientesComHistoricoFinanceiro(clientesComHistoricoFinanceiro);
     } catch (err) {
       console.error(err);
       setError("Erro ao carregar dados");
