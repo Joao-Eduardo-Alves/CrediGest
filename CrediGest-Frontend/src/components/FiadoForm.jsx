@@ -35,10 +35,7 @@ function FiadoForm() {
 
   useEffect(() => {
     carregarClientes();
-    if (id) {
-      carregarFiadoParaEditar();
-    }
-  }, [id]);
+  }, []);
 
   const carregarClientes = async () => {
     try {
@@ -47,25 +44,6 @@ function FiadoForm() {
     } catch (err) {
       setError("Erro ao carregar clientes");
       console.error(err);
-    }
-  };
-
-  const carregarFiadoParaEditar = async () => {
-    setLoading(true);
-    try {
-      const data = await fiadoService.obterPorId(id);
-      setFormData({
-        data: data.data || "",
-        clienteId: data.clienteId || "",
-        itens: data.itens || [],
-        observacao: data.observacao || "",
-        valorTotal: data.valorTotal || 0,
-      });
-    } catch (err) {
-      setError("Erro ao carregar fiado");
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
