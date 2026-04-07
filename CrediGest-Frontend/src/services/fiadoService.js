@@ -3,8 +3,6 @@ import api from "./api";
 const fiadoService = {
   listar: () => api.get("/fiados"),
 
-  obterPorId: (id) => api.get(`/fiados/${id}`),
-
   criar: (fiadoData) => api.post("/fiados", fiadoData),
 
   editar: (id, fiadoData) => api.patch(`/fiados/${id}`, fiadoData),
@@ -21,8 +19,6 @@ const fiadoService = {
     api.delete(`/fiados/${fiadoId}/itens/${itemId}`),
 
   obterSaldo: (clienteId) => api.get(`/clientes/${clienteId}/saldo`),
-
-  // pagamentos
 
   registrarPagamento: (clienteId, pagamentoData) =>
     api.post(`/pagamentos/registrar/${clienteId}`, pagamentoData),

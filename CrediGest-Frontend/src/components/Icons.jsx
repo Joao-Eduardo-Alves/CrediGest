@@ -1,4 +1,3 @@
-// src/components/Icons.jsx
 import { FaTrash, FaEdit, FaWhatsapp, FaMoneyBillWave } from "react-icons/fa";
 
 export const EditIcon = (props) => <FaEdit {...props} />;

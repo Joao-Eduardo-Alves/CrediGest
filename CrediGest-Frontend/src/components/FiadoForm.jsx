@@ -35,10 +35,7 @@ function FiadoForm() {
 
   useEffect(() => {
     carregarClientes();
-    if (id) {
-      carregarFiadoParaEditar();
-    }
-  }, [id]);
+  }, []);
 
   const carregarClientes = async () => {
     try {
@@ -50,25 +47,6 @@ function FiadoForm() {
     }
   };
 
-  const carregarFiadoParaEditar = async () => {
-    setLoading(true);
-    try {
-      const data = await fiadoService.obterPorId(id);
-      setFormData({
-        data: data.data || "",
-        clienteId: data.clienteId || "",
-        itens: data.itens || [],
-        observacao: data.observacao || "",
-        valorTotal: data.valorTotal || 0,
-      });
-    } catch (err) {
-      setError("Erro ao carregar fiado");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleChangeFormData = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -77,7 +55,6 @@ function FiadoForm() {
     }));
   };
 
-  // Atualiza o estado do formulário conforme o usuário digita
   const handleChangeNovoItem = (e) => {
     const { name, value } = e.target;
     setNovoItem((prev) => ({

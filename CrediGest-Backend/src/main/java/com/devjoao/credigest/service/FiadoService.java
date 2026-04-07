@@ -30,12 +30,6 @@ public class FiadoService {
         return fiados.stream().map(this::FiadoToDTO).collect(Collectors.toList());
     }
 
-    public FiadoDTO obterPorId(Long id) {
-        Fiado fiado = fiadoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fiado não encontrado"));
-        return FiadoToDTO(fiado);
-    }
-
     public FiadoDTO cadastrar(FiadoDTO dto) {
         Fiado fiado = new Fiado();
         fiado.setData(dto.getData() != null ? dto.getData() : LocalDateTime.now());

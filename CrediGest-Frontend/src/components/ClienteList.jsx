@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import clienteService from "../services/clienteService";
+import fiadoService from "../services/fiadoService";
 import WhatsAppButton from "./WhatsAppButton";
 import { EditIcon, DeleteIcon } from "./Icons";
 
@@ -54,6 +55,18 @@ function ClienteList() {
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja deletar este cliente?")) {
       try {
+        const fiados = await fiadoService.listar();
+        const fiadosDoCliente = fiados.filter((f) => f.clienteId === id);
+
+        const pagamentos = await fiadoService.listarPagamentos(id);
+
+        if (fiadosDoCliente.length > 0 || pagamentos.length > 0) {
+          toast.error(
+            "Não é possível deletar este cliente. Ele possui fiados ou pagamentos registrados.",
+          );
+          return;
+        }
+
         await clienteService.deletar(id);
         setClientes(clientes.filter((c) => c.id !== id));
         toast.success("Cliente deletado com sucesso");

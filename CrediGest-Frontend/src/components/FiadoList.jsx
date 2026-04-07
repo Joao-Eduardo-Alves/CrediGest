@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import fiadoService from "../services/fiadoService";
 import { EditIcon, DeleteIcon, PayIcon } from "./Icons";
+import { buildPatch } from "../utils/buildPatch";
 import "./FiadoList.css";
 
 import toast from "../utils/toast";
 
+import clienteService from "../services/clienteService";
+
 function FiadoList() {
-  const [fiados, setFiados] = useState({});
+  const [clientesComHistoricoFinanceiro, setClientesComHistoricoFinanceiro] =
+    useState({});
   const [pagamentos, setPagamentos] = useState({});
   const [exibirFiados, setExibirFiados] = useState({});
   const [exibirItens, setExibirItens] = useState({});
@@ -31,53 +35,78 @@ function FiadoList() {
   };
 
   useEffect(() => {
-    carregarFiados();
+    listarClientesComHistoricoFinanceiro();
   }, []);
 
   useEffect(() => {
     const carregarSaldos = async () => {
       const novosSaldos = {};
-      for (const clienteId of Object.keys(fiados)) {
+      for (const clienteId of Object.keys(clientesComHistoricoFinanceiro)) {
         const saldo = await fiadoService.obterSaldo(clienteId);
         novosSaldos[clienteId] = saldo;
       }
       setSaldos(novosSaldos);
     };
 
-    if (Object.keys(fiados).length) {
+    if (Object.keys(clientesComHistoricoFinanceiro).length) {
       carregarSaldos();
     }
-  }, [fiados]);
+  }, [clientesComHistoricoFinanceiro]);
 
-  const carregarFiados = async () => {
+  const listarClientesComHistoricoFinanceiro = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const data = await fiadoService.listar();
-      const grouped = data.reduce((acc, f) => {
+      const clientes = await clienteService.listar();
+
+      const fiadosData = await fiadoService.listar();
+
+      const fiadosAgrupados = fiadosData.reduce((acc, f) => {
         if (!acc[f.clienteId]) acc[f.clienteId] = [];
         acc[f.clienteId].push(f);
         return acc;
       }, {});
-      setFiados(grouped);
 
-      const novosPagamentos = {};
-      for (const clienteId of Object.keys(grouped)) {
+      const pagamentos = {};
+
+      for (const cliente of clientes) {
         try {
-          const lista = await fiadoService.listarPagamentos(clienteId);
-          novosPagamentos[clienteId] = lista;
+          const lista = await fiadoService.listarPagamentos(cliente.id);
+          pagamentos[cliente.id] = lista;
         } catch (err) {
           console.error(
             "Erro ao carregar pagamentos do cliente",
-            clienteId,
+            cliente.id,
             err,
           );
+          pagamentos[cliente.id] = [];
         }
       }
-      setPagamentos(novosPagamentos);
+      setPagamentos(pagamentos);
+
+      const cliente = {};
+
+      clientes.forEach((c) => {
+        cliente[c.id] = {
+          ...c,
+          fiados: fiadosAgrupados[c.id] || [],
+        };
+      });
+
+      const clientesComHistoricoFinanceiro = Object.fromEntries(
+        Object.entries(cliente).filter(([clienteId, c]) => {
+          const temFiado = (c.fiados || []).length > 0;
+          const temPagamento = (pagamentos[clienteId] || []).length > 0;
+
+          return temFiado || temPagamento;
+        }),
+      );
+
+      setClientesComHistoricoFinanceiro(clientesComHistoricoFinanceiro);
     } catch (err) {
       console.error(err);
-      setError("Erro ao carregar fiados");
+      setError("Erro ao carregar dados");
     } finally {
       setLoading(false);
     }
@@ -109,7 +138,7 @@ function FiadoList() {
         ...p,
         [fiadoId]: { nome: "", quantidade: 1, valor: 0 },
       }));
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Item adicionado com sucesso");
     } catch (err) {
       console.error(err);
@@ -128,7 +157,7 @@ function FiadoList() {
 
     try {
       await fiadoService.removerItem(fiadoId, itemId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Item removido com sucesso");
     } catch (err) {
       console.error(err);
@@ -137,11 +166,17 @@ function FiadoList() {
   };
 
   const startEditFiado = (fiadoId, fiado) => {
+    const dataFormatada = formatDatetimeForInput(fiado.data);
     setEditandoFiado((p) => ({
       ...p,
       [fiadoId]: {
-        data: formatDatetimeForInput(fiado.data),
+        data: dataFormatada,
         observacao: fiado.observacao ?? "",
+
+        original: {
+          data: dataFormatada,
+          observacao: fiado.observacao ?? "",
+        },
       },
     }));
   };
@@ -163,7 +198,6 @@ function FiadoList() {
     const dataSelecionada = new Date(dados.data);
     const hoje = new Date();
 
-    // Zera hora pra comparar so a data
     hoje.setHours(0, 0, 0, 0);
     dataSelecionada.setHours(0, 0, 0, 0);
 
@@ -172,13 +206,19 @@ function FiadoList() {
       return;
     }
 
+    const payload = buildPatch(dados.original, dados, {
+      data: "data",
+      observacao: "observacao",
+    });
+    if (Object.keys(payload).length === 0) {
+      toast.info("Nenhuma alteração detectada");
+      return;
+    }
+
     try {
-      await fiadoService.editar(fiadoId, {
-        data: dados.data,
-        observacao: dados.observacao,
-      });
+      await fiadoService.editar(fiadoId, payload);
       cancelEditFiado(fiadoId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Fiado atualizado com sucesso");
     } catch (err) {
       console.error(err);
@@ -187,11 +227,17 @@ function FiadoList() {
   };
 
   const startEditPagamento = (pagamentoId, pagamento) => {
+    const dataFormatada = formatDatetimeForInput(pagamento.data);
     setEditandoPagamento((p) => ({
       ...p,
       [pagamentoId]: {
-        data: formatDatetimeForInput(pagamento.data),
+        data: dataFormatada,
         valorPago: pagamento.valorPago,
+
+        original: {
+          data: dataFormatada,
+          valorPago: pagamento.valorPago,
+        },
       },
     }));
   };
@@ -213,7 +259,6 @@ function FiadoList() {
     const dataSelecionada = new Date(dados.data);
     const hoje = new Date();
 
-    // Zera hora pra comparar so a data
     hoje.setHours(0, 0, 0, 0);
     dataSelecionada.setHours(0, 0, 0, 0);
 
@@ -228,14 +273,21 @@ function FiadoList() {
       toast.error("O valor deve ser maior que zero");
       return;
     }
+
+    const payload = buildPatch(dados.original, dados, {
+      data: "data",
+      valorPago: "valorPago",
+    });
+    if (Object.keys(payload).length === 0) {
+      toast.info("Nenhuma alteração detectada");
+      return;
+    }
+
     try {
-      await fiadoService.editarPagamento(pagamentoId, {
-        data: dados.data,
-        valorPago: valor,
-      });
+      await fiadoService.editarPagamento(pagamentoId, payload);
 
       cancelEditPagamento(pagamentoId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Pagamento atualizado com sucesso");
     } catch (err) {
       console.error(err);
@@ -251,6 +303,12 @@ function FiadoList() {
         nome: item.nomeProduto,
         quantidade: item.quantidade,
         valor: item.valorProduto,
+
+        original: {
+          nome: item.nomeProduto,
+          quantidade: item.quantidade,
+          valor: item.valorProduto,
+        },
       },
     }));
   };
@@ -269,14 +327,24 @@ function FiadoList() {
       toast.error("Preencha todos os campos para salvar");
       return;
     }
+
+    const payload = buildPatch(dados.original, dados, {
+      nome: "nomeProduto",
+      quantidade: "quantidade",
+      valor: "valorProduto",
+    });
+
+    if (Object.keys(payload).length === 0) {
+      toast.info("Nenhuma alteração detectada");
+      return;
+    }
+
     try {
-      await fiadoService.editarItem(dados.fiadoId, itemId, {
-        nomeProduto: dados.nome,
-        quantidade: dados.quantidade,
-        valorProduto: dados.valor,
-      });
+      await fiadoService.editarItem(dados.fiadoId, itemId, payload);
+
       cancelEditItem(itemId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
+
       toast.success("Item atualizado com sucesso");
     } catch (err) {
       console.error(err);
@@ -288,7 +356,7 @@ function FiadoList() {
     if (!window.confirm("Tem certeza que deseja deletar este fiado?")) return;
     try {
       await fiadoService.deletar(fiadoId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Fiado deletado com sucesso");
     } catch (err) {
       console.error(err);
@@ -316,7 +384,7 @@ function FiadoList() {
       toast.success("Pagamento registrado com sucesso");
       setModalPagamentoAberto(null);
       setValorPagamento("");
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
     } catch (err) {
       console.error(err);
       toast.error("Erro ao processar pagamento");
@@ -328,7 +396,7 @@ function FiadoList() {
 
     try {
       await fiadoService.excluirPagamento(pagamentoId);
-      carregarFiados();
+      listarClientesComHistoricoFinanceiro();
       toast.success("Pagamento deletado com sucesso");
     } catch (err) {
       console.error(err);
@@ -337,7 +405,7 @@ function FiadoList() {
   };
 
   const gerarExtratoCliente = (clienteId) => {
-    const listaFiados = fiados[clienteId] || [];
+    const listaFiados = clientesComHistoricoFinanceiro[clienteId]?.fiados || [];
     const listaPagamentos = pagamentos[clienteId] || [];
 
     const eventos = [
@@ -385,12 +453,12 @@ function FiadoList() {
         + Novo Fiado
       </button>
 
-      {Object.keys(fiados).length === 0 ? (
+      {Object.keys(clientesComHistoricoFinanceiro).length === 0 ? (
         <p>Nenhum fiado encontrado</p>
       ) : (
         <table>
           <tbody>
-            {Object.keys(fiados).map((clienteId) => {
+            {Object.keys(clientesComHistoricoFinanceiro).map((clienteId) => {
               const extrato = gerarExtratoCliente(clienteId);
               return (
                 <React.Fragment key={clienteId}>
@@ -405,7 +473,9 @@ function FiadoList() {
                       <span className="seta">
                         {exibirFiados[clienteId] ? "▼" : "▶"}
                       </span>{" "}
-                      Cliente: {fiados[clienteId][0]?.nomeCliente || clienteId}{" "}
+                      Cliente:{" "}
+                      {clientesComHistoricoFinanceiro[clienteId]?.nome ||
+                        clienteId}{" "}
                       {(() => {
                         const saldo = saldos[clienteId] ?? 0;
                         const { texto, classe } = formatarSaldo(saldo);
