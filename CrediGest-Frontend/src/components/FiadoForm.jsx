@@ -55,7 +55,6 @@ function FiadoForm() {
     }));
   };
 
-  // Atualiza o estado do formulário conforme o usuário digita
   const handleChangeNovoItem = (e) => {
     const { name, value } = e.target;
     setNovoItem((prev) => ({

@@ -33,7 +33,6 @@ const request = async (endpoint, options = {}) => {
       throw new Error(`HTTP ${response.status}: ${JSON.stringify(errorData)}`);
     }
 
-    // Verifica se há conteúdo na resposta antes de fazer parse JSON
     const contentLength = response.headers.get("content-length");
     if (contentLength === "0" || !response.body) {
       return {};
@@ -42,7 +41,6 @@ const request = async (endpoint, options = {}) => {
     try {
       return await response.json();
     } catch (e) {
-      // Se não conseguir fazer parse JSON, retorna objeto vazio
       return {};
     }
   } catch (error) {
