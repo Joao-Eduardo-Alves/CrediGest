@@ -88,12 +88,15 @@ function FiadoList() {
       const cliente = {};
 
       clientes.forEach((c) => {
-        cliente[c.id] = fiadosAgrupados[c.id] || [];
+        cliente[c.id] = {
+          ...c,
+          fiados: fiadosAgrupados[c.id] || [],
+        };
       });
 
       const clientesComHistoricoFinanceiro = Object.fromEntries(
-        Object.entries(cliente).filter(([clienteId]) => {
-          const temFiado = (fiadosAgrupados[clienteId] || []).length > 0;
+        Object.entries(cliente).filter(([clienteId, c]) => {
+          const temFiado = (c.fiados || []).length > 0;
           const temPagamento = (pagamentos[clienteId] || []).length > 0;
 
           return temFiado || temPagamento;
@@ -402,7 +405,7 @@ function FiadoList() {
   };
 
   const gerarExtratoCliente = (clienteId) => {
-    const listaFiados = clientesComHistoricoFinanceiro[clienteId] || [];
+    const listaFiados = clientesComHistoricoFinanceiro[clienteId]?.fiados || [];
     const listaPagamentos = pagamentos[clienteId] || [];
 
     const eventos = [
