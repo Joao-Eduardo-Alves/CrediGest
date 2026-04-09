@@ -32,16 +32,6 @@ public class FiadoController {
         return fiadoService.listar();
     }
 
-    @Operation(summary = "Obter fiado por id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Fiado retornado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Fiado não encontrado")
-    })
-    @GetMapping("/{id}")
-    public FiadoDTO obterPorId(@PathVariable Long id) {
-        return fiadoService.obterPorId(id);
-    }
-
     @Operation(summary = "Adicionar um novo fiado")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Fiado criado com sucesso"),
