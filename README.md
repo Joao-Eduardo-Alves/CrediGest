@@ -17,6 +17,10 @@ Diante disso, me foi solicitado o desenvolvimento e a integração de um sistema
 
 O resultado foi o CrediGest: uma aplicação web moderna voltada para controle de clientes e seus respectivos créditos/débitos, trazendo mais segurança, agilidade e transparência para o processo.
 
+A aplicação foi configurada para execução local na máquina do estabelecimento utilizando Docker.
+
+A inicialização do sistema é realizada por meio de scripts automatizados (.bat), que simplificam o processo de startup e melhoram a experiência de uso, permitindo a execução com um único clique.
+
 ---
 
 ### 🚀 Funcionalidades
