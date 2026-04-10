@@ -84,7 +84,8 @@ O sistema foi preparado para execução em ambiente containerizado, incluindo:
 - Docker Compose instalado
 
 ### ▶️ Execução
-- docker-compose up --build
+- Executar o arquivo Run.bat com script docker automatizado para inicar.
+- Executar o arquivo Stop.bat com stript docker automatizado para interromper.
 
 #### Após isso, os serviços estarão disponíveis em:
 
