@@ -88,8 +88,9 @@ O sistema foi preparado para execução em ambiente containerizado, incluindo:
 - Docker Compose instalado
 
 ### ▶️ Execução
-- Executar o arquivo Run.bat com script docker automatizado para inicar.
-- Executar o arquivo Stop.bat com stript docker automatizado para interromper.
+- Substitua o nome do arquivo .env.generic para .env, e configure as credenciais do banco de dados.
+- Executar o arquivo Run.bat com script docker automatizado para inicar (Windows).
+- Executar o arquivo Stop.bat com stript docker automatizado para interromper (Windows).
 
 #### Após isso, os serviços estarão disponíveis em:
 
