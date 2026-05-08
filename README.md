@@ -144,3 +144,7 @@ Exemplo: OnCreate, OnUpdate, facilitando padronização de regras de negócio po
 ### 📌 Status do Projeto
 
 ✔️ Concluído (versão atual com containerização completa e ambiente de produção funcional).
+
+# Demonstração do sistema
+
+![Gif demonstrativo do sistema](demonstracao.gif)
